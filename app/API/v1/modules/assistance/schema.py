@@ -3,8 +3,9 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class ShiftCreate(BaseModel):
+class AssistanceCreate(BaseModel):
     type_id: int
+    title: str
     date: datetime
     start_date: datetime
     end_date: datetime
@@ -23,9 +24,10 @@ class ShiftCreate(BaseModel):
         orm_mode = True
         schema_extra = {
             "example": {
+                "title": "Nueva visita",
                 "type_id": 1,
                 "date": datetime.now(),
-                "start_date": datetime.now() + timedelta(minutes=30),
+                "start_date": datetime.now(),
                 "end_date": datetime.now() + timedelta(minutes=30),
                 "shift_id": 1,
                 "shift_name": "MAÑANA",
@@ -41,5 +43,16 @@ class ShiftCreate(BaseModel):
         }
 
 
-class ShiftSchema (ShiftCreate):
+class AssistancePatchSchema (BaseModel):
+    status: Optional[str]
+
+    class Config:
+        orm_mode = True
+        schema_extra = {
+            "example": {
+                "status": "PROGRAMADA",
+            }}
+
+
+class AssistanceSchema (AssistanceCreate):
     id: int

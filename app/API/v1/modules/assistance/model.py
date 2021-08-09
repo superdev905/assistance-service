@@ -8,10 +8,11 @@ from sqlalchemy import Column, Integer, String
 class Assistance(Base):
     __tablename__ = "assistance"
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    title = Column(String(255), nullable=False)
     type_id = Column(Integer, nullable=False)
     date = Column(DateTime, nullable=False)
-    start_date = Column(DateTime, nullable=False)
-    end_date = Column(DateTime, nullable=False)
+    start_date = Column(DateTime(timezone=True), nullable=False)
+    end_date = Column(DateTime(timezone=True), nullable=False)
     shift_id = Column(Integer, nullable=False)
     shift_name = Column(String(120))
     status = Column(String(15), nullable=False, default="PROGRAMADA")
