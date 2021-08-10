@@ -1,9 +1,11 @@
+from datetime import datetime
 from typing import Optional
 from fastapi import status, Request, APIRouter
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
 from fastapi.param_functions import Depends
+from sqlalchemy.sql.functions import func
 from app.database.main import get_database
 from .model import Assistance
 from .schema import AssistanceSchema, AssistanceCreate, AssistancePatchSchema
@@ -13,7 +15,12 @@ router = APIRouter(prefix="/assistance-visits", tags=["Asistencias y visitas"])
 
 
 @router.get("")
-def get_all(skip: int = 0, limit: int = 25, status: Optional[str] = None, db: Session = Depends(get_database)):
+def get_all(skip: int = 0, limit: int = 25,
+            start_date: Optional[datetime] = None,
+            end_date: Optional[datetime] = None,
+            status: Optional[str] = None,
+            user_id: Optional[int] = None,
+            db: Session = Depends(get_database)):
     """
     Optiene las asistencias y visitas aplicando filtros
 
@@ -21,10 +28,14 @@ def get_all(skip: int = 0, limit: int = 25, status: Optional[str] = None, db: Se
     - **limit**: limite de asistencias
     - **status**: estado de asistencia
     """
-
     filters = []
+    if start_date and end_date:
+        filters.append(func.DATE(Assistance.start_date) >= start_date)
+        filters.append(func.DATE(Assistance.end_date) <= end_date)
     if status:
         filters.append(Assistance.status == status)
+    if user_id:
+        filters.append(Assistance.assigned_id == user_id)
     return db.query(Assistance).filter(*filters).offset(skip).limit(limit).all()
 
 
