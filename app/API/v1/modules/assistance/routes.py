@@ -6,6 +6,8 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
 from fastapi.param_functions import Depends
 from sqlalchemy.sql.functions import func
+from fastapi_pagination import PaginationParams
+from fastapi_pagination.ext.sqlalchemy import paginate
 from app.database.main import get_database
 from .model import Assistance
 from .schema import AssistanceSchema, AssistanceCreate, AssistancePatchSchema
@@ -14,19 +16,18 @@ from .schema import AssistanceSchema, AssistanceCreate, AssistancePatchSchema
 router = APIRouter(prefix="/assistance-visits", tags=["Asistencias y visitas"])
 
 
-@router.get("")
-def get_all(skip: int = 0, limit: int = 25,
-            start_date: Optional[datetime] = None,
-            end_date: Optional[datetime] = None,
-            status: Optional[str] = None,
-            user_id: Optional[int] = None,
-            db: Session = Depends(get_database)):
+@router.get("/calendar")
+def get_calendar_events(start_date: Optional[datetime] = None,
+                        end_date: Optional[datetime] = None,
+                        status: Optional[str] = None,
+                        user_id: Optional[int] = None,
+                        db: Session = Depends(get_database)):
     """
-    Optiene las asistencias y visitas aplicando filtros
+    Optiene las asistencias y visitas para mostrar en el calendario
 
-    - **skip**: página de asistencias
-    - **limit**: limite de asistencias
-    - **status**: estado de asistencia
+    - **start_date**: Fecha de inicio
+    - **end_date**: Fecha de fin
+    - **user_id**: Id de usuario responsable
     """
     filters = []
     if start_date and end_date:
@@ -36,10 +37,43 @@ def get_all(skip: int = 0, limit: int = 25,
         filters.append(Assistance.status == status)
     if user_id:
         filters.append(Assistance.assigned_id == user_id)
-    return db.query(Assistance).filter(*filters).offset(skip).limit(limit).all()
+    return db.query(Assistance).filter(*filters).order_by(Assistance.date).all()
 
 
-@router.post("")
+@router.get("")
+def get_all(status: Optional[str] = None,
+            user_id: Optional[int] = None,
+            start_date: Optional[datetime] = None,
+            db: Session = Depends(get_database), params: PaginationParams = Depends()):
+    """
+    Optiene las asistencias y visitas aplicando
+
+    - **size**: página de asistencias
+    - **limit**: limite por cada página asistencias
+    - **user_id**: Id de usuario responsable
+    """
+    filters = []
+    if user_id:
+        filters.append(Assistance.assigned_id == user_id)
+    if status:
+        filters.append(Assistance.status == status)
+    if start_date:
+        filters.append(func.DATE(Assistance.date) >= start_date)
+    return paginate(db.query(Assistance).filter(*filters), params)
+
+
+@router.get("/{id}")
+def get_one(id: int, db: Session = Depends(get_database)):
+    """
+    Optiene una visita
+
+    - **id**: id de asistencia/visita
+    """
+
+    return db.query(Assistance).filter(Assistance.id == id).first()
+
+
+@ router.post("")
 def create_one(obj_in: AssistanceCreate, db: Session = Depends(get_database)):
     """
     Crea una nueva asistencia
@@ -54,7 +88,7 @@ def create_one(obj_in: AssistanceCreate, db: Session = Depends(get_database)):
     return saved_event
 
 
-@router.put("/{id}")
+@ router.put("/{id}")
 def update_one(id: int, update_body: AssistanceCreate, db: Session = Depends(get_database)):
     """
     Actualiza un evento
@@ -83,7 +117,7 @@ def update_one(id: int, update_body: AssistanceCreate, db: Session = Depends(get
     return found_event
 
 
-@router.patch("/{id}")
+@ router.patch("/{id}")
 def patch_one(id: int, patch_body: AssistancePatchSchema, db: Session = Depends(get_database)):
     """
     Actualiza campos de un evento
@@ -112,7 +146,7 @@ def patch_one(id: int, patch_body: AssistancePatchSchema, db: Session = Depends(
     return found_event
 
 
-@router.delete("/{id}")
+@ router.delete("/{id}")
 def delete_one(id: int,  db: Session = Depends(get_database)):
     """
     Elimina un evento
