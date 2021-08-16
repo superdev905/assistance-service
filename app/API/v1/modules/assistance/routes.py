@@ -5,6 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
 from fastapi.param_functions import Depends
+from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql.functions import func
 from fastapi_pagination import PaginationParams
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -41,32 +42,40 @@ def get_calendar_events(start_date: Optional[datetime] = None,
 
 
 @router.get("")
-def get_all(status: Optional[str] = None,
-            user_id: Optional[int] = None,
+def get_all(user_id: Optional[int] = None,
             start_date: Optional[datetime] = None,
+            search: Optional[str] = None,
             db: Session = Depends(get_database), params: PaginationParams = Depends()):
     """
-    Optiene las asistencias y visitas aplicando
-
-    - **size**: página de asistencias
-    - **limit**: limite por cada página asistencias
+    Retorna la lista de visitas
+    ---
+    Parametros:
+    - **size**: Página de asistencias
+    - **limit**: Número de registros por cada página asistencias
     - **user_id**: Id de usuario responsable
+    - **start_date**: Fecha inicial para filtrar visitas
+    - **search**: Parámetro a buscar 
     """
     filters = []
+    search_filters = []
     if user_id:
         filters.append(Assistance.assigned_id == user_id)
-    if status:
-        filters.append(Assistance.status == status)
     if start_date:
-        filters.append(func.DATE(Assistance.date) >= start_date)
-    return paginate(db.query(Assistance).filter(*filters), params)
+        filters.append(func.DATE(Assistance.start_date) >= start_date)
+    if search:
+        formatted_search = '%{}%'.format(search)
+        search_filters.append(Assistance.title.ilike(formatted_search))
+        search_filters.append(Assistance.business_name.ilike(formatted_search))
+        search_filters.append(
+            Assistance.construction_name.ilike(formatted_search))
+    return paginate(db.query(Assistance).filter(and_(*filters, or_(*search_filters), Assistance.status != "CANCELADA")).order_by(Assistance.start_date), params)
 
 
 @router.get("/{id}")
 def get_one(id: int, db: Session = Depends(get_database)):
     """
     Optiene una visita
-
+    ---
     - **id**: id de asistencia/visita
     """
 
