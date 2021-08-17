@@ -1,3 +1,5 @@
+from typing import Optional
+from fastapi.param_functions import Depends
 from fastapi_crudrouter import SQLAlchemyCRUDRouter
 from app.database.main import SessionLocal, get_database
 from .model import AssistanceConstruction
@@ -13,3 +15,19 @@ router = SQLAlchemyCRUDRouter(
     tags=["Asistencia en obra"],
     delete_all_route=False
 )
+
+
+@router.get("")
+def overloaded_get_all(skip: int = None,
+                       limit: int = None,
+                       visit_id: Optional[str] = None,
+                       db: SessionLocal = Depends(get_database)):
+    """
+    Retorna la lista de assistencias en obra
+    ---
+    """
+    filters = []
+    if visit_id:
+        filters.append(AssistanceConstruction.visit_id == visit_id)
+
+    return db.query(AssistanceConstruction).filter(*filters).offset(skip).limit(limit).all()
