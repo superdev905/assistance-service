@@ -26,7 +26,7 @@ class Assistance(Base):
     assigned_id = Column(Integer, nullable=False)
     case_id = Column(Integer, nullable=False)
     task_id = Column(Integer, nullable=False)
-    attached_url = Column(Integer)
+    attached_url = Column(String(1024))
     created_by = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True),
                         nullable=False, server_default=func.now())
