@@ -32,6 +32,7 @@ class AssistanceCreate(BaseModel):
         schema_extra = {
             "example": {
                 "date": datetime.now(),
+                "employee_id": 1,
                 "source_system": "VISITAS",
                 "source_business": "FUNDACIÓN CHCC",
                 "attention_place": 'Oficina',
