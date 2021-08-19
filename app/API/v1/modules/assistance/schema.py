@@ -5,8 +5,9 @@ from pydantic import BaseModel
 
 class AssistanceCreate(BaseModel):
     date: datetime
-    source_system: int
-    source_business: int
+    employee_id: int
+    source_system: str
+    source_business: str
     attention_place: str
     contact_method: str
     business_id: int
@@ -31,8 +32,8 @@ class AssistanceCreate(BaseModel):
         schema_extra = {
             "example": {
                 "date": datetime.now(),
-                "source_system": 1,
-                "source_business": 1,
+                "source_system": "VISITAS",
+                "source_business": "FUNDACIÓN CHCC",
                 "attention_place": 'Oficina',
                 "contact_method": "Presencial",
                 "business_id": 1,

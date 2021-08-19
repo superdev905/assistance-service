@@ -1,6 +1,5 @@
-from sqlalchemy.sql.expression import null
 from sqlalchemy.sql.functions import func
-from sqlalchemy.sql.sqltypes import DateTime, Time
+from sqlalchemy.sql.sqltypes import DateTime
 from app.database.base_class import Base
 from sqlalchemy import Column, Integer, String
 
@@ -8,9 +7,10 @@ from sqlalchemy import Column, Integer, String
 class Assistance(Base):
     __tablename__ = "assistance"
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    employee_id = Column(Integer, nullable=False)
     date = Column(DateTime, nullable=False)
-    source_system = Column(Integer, nullable=False)
-    source_business = Column(Integer, nullable=False)
+    source_system = Column(String(100), nullable=False)
+    source_business = Column(String(100), nullable=False)
     attention_place = Column(String(255), nullable=False)
     contact_method = Column(String(255), nullable=False)
     business_id = Column(Integer, nullable=False)
