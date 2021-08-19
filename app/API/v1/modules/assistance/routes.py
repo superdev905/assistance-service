@@ -35,7 +35,7 @@ def get_all(user_id: Optional[int] = None,
     filters = []
     search_filters = []
 
-    return paginate(db.query(Assistance).filter(and_(*filters, or_(*search_filters), Assistance.status != "CANCELADA")).order_by(Assistance.start_date), params)
+    return paginate(db.query(Assistance).filter(and_(*filters, or_(*search_filters))).order_by(Assistance.created_at), params)
 
 
 @router.get("/{id}")
