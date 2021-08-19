@@ -14,6 +14,7 @@ class AssistanceCreate(BaseModel):
     construction_id: int
     construction_name: Optional[str]
     topic_id: int
+    area_id: int
     management_id: int
     is_social_case: str
     status: str
@@ -39,6 +40,7 @@ class AssistanceCreate(BaseModel):
                 "construction_id": 1,
                 "construction_name": "",
                 "topic_id": 1,
+                "area_id": 1,
                 "management_id": 1,
                 "is_social_case": 'NO',
                 "status": "COMPLETADO",

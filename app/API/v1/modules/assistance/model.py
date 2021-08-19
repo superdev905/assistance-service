@@ -18,6 +18,7 @@ class Assistance(Base):
     construction_id = Column(Integer, nullable=False)
     construction_name = Column(String(255), nullable=False)
     topic_id = Column(Integer, nullable=False)
+    area_id = Column(Integer, nullable=False)
     management_id = Column(Integer, nullable=False)
     is_social_case = Column(String(2), nullable=False)
     status = Column(String(50), nullable=False)
