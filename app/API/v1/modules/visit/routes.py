@@ -10,11 +10,35 @@ from sqlalchemy.sql.functions import func
 from fastapi_pagination import PaginationParams
 from fastapi_pagination.ext.sqlalchemy import paginate
 from app.database.main import get_database
-from .model import Assistance
-from .schema import AssistanceSchema, AssistanceCreate, AssistancePatchSchema
+from .model import Visit
+from .schema import VisitSchema, VisitCreate, VisitPatchSchema
 
 
-router = APIRouter(prefix="/assistance", tags=["Asistencias"])
+router = APIRouter(prefix="/visits", tags=["Visitas"])
+
+
+@router.get("/calendar")
+def get_calendar_events(start_date: Optional[datetime] = None,
+                        end_date: Optional[datetime] = None,
+                        status: Optional[str] = None,
+                        user_id: Optional[int] = None,
+                        db: Session = Depends(get_database)):
+    """
+    Optiene las asistencias y visitas para mostrar en el calendario
+
+    - **start_date**: Fecha de inicio
+    - **end_date**: Fecha de fin
+    - **user_id**: Id de usuario responsable
+    """
+    filters = []
+    if start_date and end_date:
+        filters.append(func.DATE(Visit.start_date) >= start_date)
+        filters.append(func.DATE(Visit.end_date) <= end_date)
+    if status:
+        filters.append(Visit.status == status)
+    if user_id:
+        filters.append(Visit.assigned_id == user_id)
+    return db.query(Visit).filter(*filters).order_by(Visit.date).all()
 
 
 @router.get("")
@@ -23,19 +47,28 @@ def get_all(user_id: Optional[int] = None,
             search: Optional[str] = None,
             db: Session = Depends(get_database), params: PaginationParams = Depends()):
     """
-    Retorna la lista de asistencias
+    Retorna la lista de visitas
     ---
     Parametros:
-    - **page**: Página de asistencias
-    - **size**: Número de registros por cada página asistencias
+    - **size**: Página de asistencias
+    - **limit**: Número de registros por cada página asistencias
     - **user_id**: Id de usuario responsable
     - **start_date**: Fecha inicial para filtrar visitas
     - **search**: Parámetro a buscar 
     """
     filters = []
     search_filters = []
-
-    return paginate(db.query(Assistance).filter(and_(*filters, or_(*search_filters), Assistance.status != "CANCELADA")).order_by(Assistance.start_date), params)
+    if user_id:
+        filters.append(Visit.assigned_id == user_id)
+    if start_date:
+        filters.append(func.DATE(Visit.start_date) >= start_date)
+    if search:
+        formatted_search = '%{}%'.format(search)
+        search_filters.append(Visit.title.ilike(formatted_search))
+        search_filters.append(Visit.business_name.ilike(formatted_search))
+        search_filters.append(
+            Visit.construction_name.ilike(formatted_search))
+    return paginate(db.query(Visit).filter(and_(*filters, or_(*search_filters), Visit.status != "CANCELADA")).order_by(Visit.start_date), params)
 
 
 @router.get("/{id}")
@@ -46,16 +79,17 @@ def get_one(id: int, db: Session = Depends(get_database)):
     - **id**: id de asistencia/visita
     """
 
-    return db.query(Assistance).filter(Assistance.id == id).first()
+    return db.query(Visit).filter(Visit.id == id).first()
 
 
 @ router.post("")
-def create_one(obj_in: AssistanceCreate, db: Session = Depends(get_database)):
+def create_one(obj_in: VisitCreate, db: Session = Depends(get_database)):
     """
     Crea una nueva asistencia
 
     """
-    saved_event = Assistance(**jsonable_encoder(obj_in))
+    print(obj_in.start_date)
+    saved_event = Visit(**jsonable_encoder(obj_in))
 
     db.add(saved_event)
     db.commit()
@@ -64,14 +98,14 @@ def create_one(obj_in: AssistanceCreate, db: Session = Depends(get_database)):
 
 
 @ router.put("/{id}")
-def update_one(id: int, update_body: AssistanceCreate, db: Session = Depends(get_database)):
+def update_one(id: int, update_body: VisitCreate, db: Session = Depends(get_database)):
     """
     Actualiza un evento
     - **id**: id del evento
 
     """
-    found_event = db.query(Assistance).filter(
-        Assistance.id == id).first()
+    found_event = db.query(Visit).filter(
+        Visit.id == id).first()
     if not found_event:
         raise HTTPException(
             status_code=400, detail="Este evento no existe")
@@ -93,14 +127,14 @@ def update_one(id: int, update_body: AssistanceCreate, db: Session = Depends(get
 
 
 @ router.patch("/{id}")
-def patch_one(id: int, patch_body: AssistancePatchSchema, db: Session = Depends(get_database)):
+def patch_one(id: int, patch_body: VisitPatchSchema, db: Session = Depends(get_database)):
     """
     Actualiza campos de un evento
     - **id**: id del evento
 
     """
-    found_event = db.query(Assistance).filter(
-        Assistance.id == id).first()
+    found_event = db.query(Visit).filter(
+        Visit.id == id).first()
     if not found_event:
         raise HTTPException(
             status_code=400, detail="Este evento no existe")
@@ -129,8 +163,8 @@ def delete_one(id: int,  db: Session = Depends(get_database)):
     - **id**: id del evento
 
     """
-    event = db.query(Assistance).filter(
-        Assistance.id == id).first()
+    event = db.query(Visit).filter(
+        Visit.id == id).first()
     if not event:
         raise HTTPException(
             status_code=400, detail="Este evento no existe")
