@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from fastapi import status, Request, APIRouter
+from fastapi import status, APIRouter
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
@@ -41,9 +41,9 @@ def get_all(user_id: Optional[int] = None,
 @router.get("/{id}")
 def get_one(id: int, db: Session = Depends(get_database)):
     """
-    Optiene una visita
+    Optiene una asistencia
     ---
-    - **id**: id de asistencia/visita
+    - **id**: id de asistencia
     """
 
     return db.query(Assistance).filter(Assistance.id == id).first()
@@ -66,15 +66,15 @@ def create_one(obj_in: AssistanceCreate, db: Session = Depends(get_database)):
 @ router.put("/{id}")
 def update_one(id: int, update_body: AssistanceCreate, db: Session = Depends(get_database)):
     """
-    Actualiza un evento
-    - **id**: id del evento
+    Actualiza un asistencia
+    - **id**: id de la asistencia
 
     """
     found_event = db.query(Assistance).filter(
         Assistance.id == id).first()
     if not found_event:
         raise HTTPException(
-            status_code=400, detail="Este evento no existe")
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Esta asistencia no existe")
 
     obj_data = jsonable_encoder(found_event)
 
@@ -95,15 +95,15 @@ def update_one(id: int, update_body: AssistanceCreate, db: Session = Depends(get
 @ router.patch("/{id}")
 def patch_one(id: int, patch_body: AssistancePatchSchema, db: Session = Depends(get_database)):
     """
-    Actualiza campos de un evento
-    - **id**: id del evento
+    Actualiza campos de una asistencia
+    - **id**: id de la asistencia
 
     """
     found_event = db.query(Assistance).filter(
         Assistance.id == id).first()
     if not found_event:
         raise HTTPException(
-            status_code=400, detail="Este evento no existe")
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Esta asistencia no existe")
 
     obj_data = jsonable_encoder(found_event)
 
@@ -124,17 +124,17 @@ def patch_one(id: int, patch_body: AssistancePatchSchema, db: Session = Depends(
 @ router.delete("/{id}")
 def delete_one(id: int,  db: Session = Depends(get_database)):
     """
-    Elimina un evento
+    Elimina una asistencia
 
-    - **id**: id del evento
+    - **id**: id de la asistencia
 
     """
     event = db.query(Assistance).filter(
         Assistance.id == id).first()
     if not event:
         raise HTTPException(
-            status_code=400, detail="Este evento no existe")
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Esta asistencia no existe")
 
     db.delete(event)
     db.commit()
-    return {"message": "Evento eliminado"}
+    return {"message": "Asistencia eliminada"}
