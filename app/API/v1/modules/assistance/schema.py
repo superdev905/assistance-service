@@ -5,7 +5,10 @@ from pydantic import BaseModel
 
 class AssistanceCreate(BaseModel):
     date: datetime
+    employee_rut: str
     employee_id: int
+    employee_name: str
+    employee_lastname: str
     source_system: str
     source_business: str
     attention_place: str
@@ -16,6 +19,7 @@ class AssistanceCreate(BaseModel):
     construction_name: Optional[str]
     topic_id: int
     area_id: int
+    area_name: str
     management_id: int
     is_social_case: str
     status: str
@@ -23,6 +27,7 @@ class AssistanceCreate(BaseModel):
     assigned_id: int
     case_id: int
     task_id: int
+    visit_id: int
     observation: str
     attached_url: Optional[str] = ""
     created_by: int
@@ -32,7 +37,10 @@ class AssistanceCreate(BaseModel):
         schema_extra = {
             "example": {
                 "date": datetime.now(),
+                "employee_rut": '122.',
                 "employee_id": 1,
+                "employee_name": "Jhon Die Volkman Senger",
+                "employee_lastname": "Jhon Die Volkman Senger",
                 "source_system": "VISITAS",
                 "source_business": "FUNDACIÓN CHCC",
                 "attention_place": 'Oficina',
@@ -43,12 +51,14 @@ class AssistanceCreate(BaseModel):
                 "construction_name": "",
                 "topic_id": 1,
                 "area_id": 1,
+                "area_name": "SALUD",
                 "management_id": 1,
                 "is_social_case": 'NO',
                 "status": "COMPLETADO",
                 "company_report": "SI",
                 "case_id": 1,
                 "task_id": 1,
+                "visit_id": 4,
                 "attached_url": "",
                 "observation": "Observation",
                 "created_by": 1,

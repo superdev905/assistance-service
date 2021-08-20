@@ -18,9 +18,8 @@ router = APIRouter(prefix="/assistance", tags=["Asistencias"])
 
 
 @router.get("")
-def get_all(user_id: Optional[int] = None,
-            start_date: Optional[datetime] = None,
-            search: Optional[str] = None,
+def get_all(visit_id: Optional[int] = None,
+
             db: Session = Depends(get_database), params: PaginationParams = Depends()):
     """
     Retorna la lista de asistencias
