@@ -12,7 +12,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from app.database.main import get_database
 from .model import Visit
 from .schema import VisitSchema, VisitCreate, VisitPatchSchema
-
+from ...services.file import create_visit_report
 
 router = APIRouter(prefix="/visits", tags=["Visitas"])
 
@@ -80,6 +80,18 @@ def get_one(id: int, db: Session = Depends(get_database)):
     """
 
     return db.query(Visit).filter(Visit.id == id).first()
+
+
+@router.post("/{id}/report")
+def get_one(id: int, db: Session = Depends(get_database)):
+    """
+    Crea el reporte de la visita
+    ---
+    - **id**: id de asistencia/visita
+    """
+    create_visit_report()
+
+    return {"msg": "scc"}
 
 
 @ router.post("")

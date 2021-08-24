@@ -1,6 +1,16 @@
 version: "3"
 
 services:
+  #nginx:
+  #  build:
+  #    context: ./nginx
+  #    dockerfile: Dockerfile
+  #  ports:
+  #    - "5100:5100"
+  #  links:
+  #    - assistance-api
+  #  networks:
+  #    - internal-network
   assistance-api:
     build: .
     command: bash -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 80 --reload"
