@@ -12,6 +12,7 @@ class AssistanceConstruction(Base):
                 unique=True, autoincrement=True)
     type_name = Column(String(255), nullable=False)
     type_id = Column(Integer, nullable=False)
+    date = Column(DateTime, nullable=False, server_default=func.now())
     quantity = Column(Integer, nullable=False)
     visit_id = Column(Integer, ForeignKey('visit.id', ondelete='CASCADE'))
     created_by = Column(Integer, nullable=False)
