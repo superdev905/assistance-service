@@ -33,7 +33,7 @@ def get_all(visit_id: Optional[int] = None,
 
     items = [{"name": "SALUD", "short": "S"},
              {"name": "VIVIENDA", "short": "V"},
-             {"name": "PREVISION", "short": "P"},
+             {"name": "PREVISIÓN", "short": "P"},
              {"name": "FAMILIA", "short": "F"},
              {"name": "EDUCACION", "short": "E"},
              {"name": "LEGAL", "short": "L"},
@@ -57,9 +57,10 @@ def get_all(visit_id: Optional[int] = None,
         emp = {}
         list = []
         for i in items:
+
             total_by_item = db.query(Assistance).filter(and_(
-                Assistance.employee_id == employee.employee_id, Assistance.area_name == i[
-                    "name"],
+                Assistance.employee_id == employee.employee_id, Assistance.area_name.ilike(i[
+                    "name"]),
                 Assistance.visit_id == visit_id)).all()
             list.append({**i, "total": len(total_by_item)})
             emp[i["short"]] = len(total_by_item)
@@ -88,7 +89,7 @@ def get_one(visit_id: int, employee_rut: str = None, db: Session = Depends(get_d
         for item in r.json():
             temp_item = {**item}
             for emp in employees:
-                print(item["id"], emp.employee_id)
+                print(item["id"] == int(emp.employee_id))
                 if item["id"] == int(emp.employee_id):
                     temp_item["tag"] = "A"
                     temp_item["is_old"] = True
@@ -97,6 +98,13 @@ def get_one(visit_id: int, employee_rut: str = None, db: Session = Depends(get_d
                     temp_item["is_old"] = False
             result.append(temp_item)
     return result
+
+
+@router.get("/attended")
+def get_one(visit_id: int, id_employee: str = None, db: Session = Depends(get_database)):
+    list = db.query(Assistance).filter(and_(
+        Assistance.visit_id == visit_id, Assistance.employee_id == id_employee)).all()
+    return list
 
 
 @router.get("/{id}")
