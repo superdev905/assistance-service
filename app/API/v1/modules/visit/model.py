@@ -22,6 +22,8 @@ class Visit(Base):
     business_name = Column(String(150))
     construction_name = Column(String(150))
     observation = Column(String(500), nullable=False)
+    report_url = Column(String(255))
+    report_key = Column(String(255))
     created_by = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True),
                         nullable=False, server_default=func.now())

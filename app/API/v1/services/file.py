@@ -7,26 +7,33 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.platypus import Paragraph, Spacer, Table, Image
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from ..helpers.format_date import format_date_to_string
 
 
-def create_visit_report():
-
-    report = SimpleDocTemplate("./report.pdf", topMargin=2.54*cm,
+def create_visit_report(data):
+    date_string = format_date_to_string()
+    report_name = 'Reporte'+data["correlative"]
+    report = SimpleDocTemplate("./"+report_name, topMargin=2.54*cm,
                                bottomMargin=2.54*cm,
                                leftMargin=2.54*cm,
                                rightMargin=2.54*cm)
 
     styles = getSampleStyleSheet()
-    title = "Reporte Visita 3"
-    hero = "Informo a usted con respecto a la visita realizada el dia Lunes 07 de Diciembre de 2020, a la obra Manquecura valle Lo Campino por Alexandra Aguirre Lastra, profesional de atencién en obra de la Fundacion Social C.Ch.C.."
+    title = "Reporte Visita "+data["correlative"]
+    hero = "Informo a usted con respecto a la visita realizada el dia " + \
+        date_string + " a la obra " + \
+        data["construction_name"] + \
+        " por " + \
+        data["user"] + \
+        " , profesional de atencién en obra de la Fundacion Social C.Ch.C.."
     sub_intro = "En la ocasión se obtuvo el siguiente resultado:"
     result = {
-        "Trabjadores atendidos": '<b>10 personas</b>',
+        "Trabjadores atendidos": '<b>' + data["total"] + ' personas</b>',
         "Charlas": "No se realizaron",
         "Folletos": "No se realizaron",
         "Afiches": "No se realizaron",
-        "Casos relevantes": "Enim nec dui nunc mattis enim ut tellus elementum sagittis. Dolor purus non enim praesent. Amet aliquam id diam maecenas ultricies mi. Netus et malesuada fames ac. Vitae purus faucibus ornare suspendisse sed nisi lacus. Ac turpis egestas sed tempus. Magna sit amet purus gravida quis. Senectus et netus et malesuada",
-        "Observaciones de la visita": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+        "Casos relevantes": data["relevant"],
+        "Observaciones de la visita": data["observations"],
 
     }
     table_data = []
@@ -51,10 +58,10 @@ def create_visit_report():
     report_greenting_title = Paragraph("Atentamente")
     report_greenting_title.spaceAfter = 5
     professional_data = {
-        "names": "<b>Alexandra Aguirre Lastra</b>",
+        "names": "<b>" + data["user"] + "</b>",
         "charge": "Asistente Social Atención Social Empresas",
-        "phone": "Teléfono: (02)25858000",
-        "email": "aaguirre@fundacioncchc.cl",
+        "phone": "Teléfono: "+data["user_phone"],
+        "email": data["user_email"],
         "entity": "<b>FUNDACION SOCIAL C.Ch.c.</b>",
         "entity_phrase": "SOMOS C.CH.C."
     }
@@ -66,4 +73,4 @@ def create_visit_report():
 
     report.build([report_title, report_intro, report_sub_intro, result_table,
                  report_greenting_title, *sign_elements])
-    return 'created'
+    return report_name

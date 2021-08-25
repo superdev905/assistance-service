@@ -30,6 +30,7 @@ class AssistanceCreate(BaseModel):
     visit_id: int
     observation: str
     attached_url: Optional[str] = ""
+    attached_key: Optional[str] = ""
     created_by: int
 
     class Config:

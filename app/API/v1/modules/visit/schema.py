@@ -56,3 +56,11 @@ class VisitPatchSchema (BaseModel):
 
 class VisitSchema (VisitCreate):
     id: int
+
+
+class VisitReportSchema(BaseModel):
+    user: str
+    user_phone: str
+    user_email: str
+    observations: str
+    relevant: str

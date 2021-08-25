@@ -121,16 +121,9 @@ def create_report(id: int, report_in: VisitReportSchema, db: Session = Depends(g
             "observations": report_in.observations,
             "total": str(total_assistance)}
 
-    report_name = create_visit_report(data)
+    create_visit_report(data)
 
-    visit.report_key = report_name
-    visit.report_url = report_name
-
-    db.add(visit)
-    db.commit()
-    db.refresh(visit)
-
-    return {"msg": "Reporte creado"}
+    return {"msg": "scc"}
 
 
 @ router.post("")

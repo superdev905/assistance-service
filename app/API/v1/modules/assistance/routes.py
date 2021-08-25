@@ -101,7 +101,7 @@ def get_one(visit_id: int, employee_rut: str = None, db: Session = Depends(get_d
 
 
 @router.get("/attended")
-def get_one(visit_id: int, id_employee: str = None, db: Session = Depends(get_database)):
+def get_attended_list(visit_id: int, id_employee: str = None, db: Session = Depends(get_database)):
     list = db.query(Assistance).filter(and_(
         Assistance.visit_id == visit_id, Assistance.employee_id == id_employee)).all()
     return list

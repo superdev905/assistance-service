@@ -1,7 +1,7 @@
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.sql.sqltypes import DateTime
+from sqlalchemy.sql.sqltypes import Boolean, DateTime
 from app.database.base_class import Base
 from sqlalchemy import Column, Integer, String
 
@@ -35,6 +35,7 @@ class Assistance(Base):
     task_id = Column(Integer, nullable=False)
     visit_id = Column(Integer, ForeignKey("visit.id", ondelete="CASCADE"))
     attached_url = Column(String(1024))
+    attached_key = Column(String(255))
     created_by = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True),
                         nullable=False, server_default=func.now())
