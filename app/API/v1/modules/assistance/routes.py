@@ -73,7 +73,7 @@ def get_all(visit_id: Optional[int] = None,
 
 @router.get("/search")
 def get_one(visit_id: int, employee_rut: str = None, db: Session = Depends(get_database)):
-    formatted_search = '%{}%'.format(employee_rut)
+    formatted_search = '{}%'.format(employee_rut)
     employees = db.query(Assistance.employee_id.label("employee_id")).filter(and_(
         Assistance.visit_id == visit_id, Assistance.employee_rut.ilike(formatted_search))).group_by(Assistance.employee_id).all()
 
