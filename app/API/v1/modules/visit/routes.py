@@ -1,6 +1,7 @@
+import requests
 from datetime import datetime
 from typing import Optional
-from fastapi import status, Request, APIRouter
+from fastapi import status, APIRouter
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
@@ -10,6 +11,7 @@ from sqlalchemy.sql.functions import func
 from fastapi_pagination import PaginationParams
 from fastapi_pagination.ext.sqlalchemy import paginate
 from app.database.main import get_database
+from app.settings import PARAMETERS_SERVICE
 from ..assistance.model import Assistance
 from .model import Visit
 from .schema import VisitSchema, VisitCreate, VisitPatchSchema, VisitReportSchema
@@ -79,8 +81,15 @@ def get_one(id: int, db: Session = Depends(get_database)):
     ---
     - **id**: id de asistencia/visita
     """
+    visit = db.query(Visit).filter(Visit.id == id).first()
 
-    return db.query(Visit).filter(Visit.id == id).first()
+    if not visit:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="No existe una visita con este" + id)
+
+    r = requests.get(PARAMETERS_SERVICE+"/api/v1/shift/"+str(visit.shift_id))
+
+    return {**visit.__dict__, "shift": r.json()}
 
 
 @router.get("/{id}/statistics")
