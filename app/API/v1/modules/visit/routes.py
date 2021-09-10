@@ -11,7 +11,7 @@ from sqlalchemy.sql.functions import func
 from fastapi_pagination import PaginationParams
 from fastapi_pagination.ext.sqlalchemy import paginate
 from app.database.main import get_database
-from app.settings import PARAMETERS_SERVICE
+from app.settings import SERVICES
 from ..assistance.model import Assistance
 from .model import Visit
 from .schema import VisitSchema, VisitCreate, VisitPatchSchema, VisitReportSchema
@@ -34,13 +34,15 @@ def get_calendar_events(start_date: Optional[datetime] = None,
     - **user_id**: Id de usuario responsable
     """
     filters = []
+
     if start_date and end_date:
-        filters.append(func.DATE(Visit.start_date) >= start_date)
-        filters.append(func.DATE(Visit.end_date) <= end_date)
+        filters.append(Visit.start_date >= start_date)
+        filters.append(Visit.end_date <= end_date)
     if status:
         filters.append(Visit.status == status)
     if user_id:
         filters.append(Visit.assigned_id == user_id)
+
     return db.query(Visit).filter(*filters).order_by(Visit.date).all()
 
 
@@ -87,7 +89,7 @@ def get_one(id: int, db: Session = Depends(get_database)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="No existe una visita con este" + id)
 
-    r = requests.get(PARAMETERS_SERVICE+"/api/v1/shift/"+str(visit.shift_id))
+    r = requests.get(SERVICES["parameters"]+"/shift/"+str(visit.shift_id))
 
     return {**visit.__dict__, "shift": r.json()}
 

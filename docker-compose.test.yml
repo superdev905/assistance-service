@@ -9,6 +9,8 @@ services:
       - .:/app
     ports:
       - 5191:80
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   db:
     restart: unless-stopped
     image: postgres:13-alpine

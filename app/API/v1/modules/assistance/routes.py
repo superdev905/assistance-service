@@ -11,7 +11,7 @@ from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql.functions import func
 from fastapi_pagination import PaginationParams
 from fastapi_pagination.ext.sqlalchemy import paginate
-from app.settings import EMPLOYEE_SERVICE
+from app.settings import SERVICES
 from app.database.main import get_database
 from .model import Assistance
 from .schema import AssistanceSchema, AssistanceCreate, AssistancePatchSchema
@@ -79,7 +79,7 @@ def get_one(visit_id: int, employee_rut: str = None, db: Session = Depends(get_d
 
     result = []
     params = {"search": employee_rut, "state": "CREATED"}
-    r = requests.get(EMPLOYEE_SERVICE+"/api/v1/employees",
+    r = requests.get(SERVICES["employees"]+"/employees",
                      params=params)
     if len(employees) == 0:
         for item in r.json():
