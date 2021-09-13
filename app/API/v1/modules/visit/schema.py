@@ -13,9 +13,9 @@ class VisitCreate(BaseModel):
     shift_name: Optional[str]
     status: str
     assigned_id: int
-    business_id: int
+    business_id: Optional[int]
     business_name: Optional[str]
-    construction_id: int
+    construction_id: Optional[int]
     construction_name: Optional[str]
     observation: str
     created_by: int
