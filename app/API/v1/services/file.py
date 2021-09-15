@@ -1,3 +1,5 @@
+import requests
+from io import BytesIO, SEEK_SET
 from reportlab.pdfgen import canvas
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.platypus import Paragraph, Table, TableStyle
@@ -7,13 +9,39 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.platypus import Paragraph, Spacer, Table, Image
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from app.settings import SERVICES
 from ..helpers.format_date import format_date_to_string
 
 
+def render_item(quantity, end="persona", empty="No se realizaron") -> str:
+    if quantity == 0:
+        return empty
+    if quantity == 1:
+        return str(quantity) + " " + end
+    return str(quantity) + " " + end + "s"
+
+
+def render_table_item(value, end="persona", empty="No se realizaron") -> str:
+    if (isinstance(value, int)):
+        return render_item(value, end, empty)
+    return value
+
+
+def upload_report(filename, file):
+    files = {'file': (filename, file, 'application/pdf')}
+    response = requests.post(
+        SERVICES["parameters"]+"/file/upload", files=files)
+    print(response.json())
+    return response.json()
+
+
 def create_visit_report(data):
+
+    buffer = BytesIO()
     date_string = format_date_to_string()
-    report_name = 'Reporte'+data["correlative"]
-    report = SimpleDocTemplate("./"+report_name, topMargin=2.54*cm,
+    report_name = 'Reporte'+data["correlative"] + ".pdf"
+    report = SimpleDocTemplate(buffer,
+                               topMargin=2.54*cm,
                                bottomMargin=2.54*cm,
                                leftMargin=2.54*cm,
                                rightMargin=2.54*cm)
@@ -27,24 +55,16 @@ def create_visit_report(data):
         data["user"] + \
         " , profesional de atencién en obra de la Fundacion Social C.Ch.C.."
     sub_intro = "En la ocasión se obtuvo el siguiente resultado:"
-    result = {
-        "Trabjadores atendidos": '<b>' + data["total"] + ' personas</b>',
-        "Charlas": "No se realizaron",
-        "Folletos": "No se realizaron",
-        "Afiches": "No se realizaron",
-        "Casos relevantes": data["relevant"],
-        "Observaciones de la visita": data["observations"],
-
-    }
     table_data = []
     table_style = [('GRID', (0, 0), (-1, -1), 0.5, colors.black, ),
                    ("BACKGROUND", (0, 0), (0, 0), colors.lightgrey),
                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
                    ]
     index = 0
-    for k, v in result.items():
+    for item in data["table_data"]:
         index = index + 1
-        table_data.append([Paragraph(k), Paragraph(v)])
+        table_data.append([Paragraph(item["display"]),
+                           Paragraph(render_table_item(item["data"]))])
         table_style.append(
             ("BACKGROUND", (0, index), (0, 0), colors.lightgrey))
 
@@ -73,4 +93,10 @@ def create_visit_report(data):
 
     report.build([report_title, report_intro, report_sub_intro, result_table,
                  report_greenting_title, *sign_elements])
-    return report_name
+
+    files = {'file': (report_name,  buffer.getvalue(), "application/pdf")}
+    response = requests.post(
+        SERVICES["parameters"]+"/file/upload", files=files)
+    print(response.json())
+    buffer.seek(0)
+    return response.json()

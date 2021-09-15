@@ -34,6 +34,7 @@ def format_date_to_string():
     dayName = dayNames[now.weekday()]
 
     string_date = dayName + " " + \
-        str(now.day) + " de " + month + " del " + str(now.year)
+        str(now.day) + " de " + month + " del " + str(now.year) + \
+        " a las " + "%s: % s" % (now.hour, now.minute)
 
     return string_date

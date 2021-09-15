@@ -12,6 +12,7 @@ from fastapi_pagination import PaginationParams
 from fastapi_pagination.ext.sqlalchemy import paginate
 from app.database.main import get_database
 from app.settings import SERVICES
+from ..assistance_construction.model import AssistanceConstruction
 from ..assistance.model import Assistance
 from .model import Visit
 from .schema import VisitSchema, VisitCreate, VisitPatchSchema, VisitReportSchema
@@ -120,9 +121,37 @@ def create_report(id: int, report_in: VisitReportSchema, db: Session = Depends(g
     if not visit:
         raise HTTPException(
             status_code=400, detail="Esta visita no existe")
-
+    total_formatted = ""
     total_assistance = len(db.query(Assistance).filter(
         Assistance.visit_id == id).all())
+    if(total_assistance > 0):
+        total_formatted = str(total_assistance) + \
+            " personas" if total_assistance > 1 else "persona"
+    else:
+        total_formatted = "No se atienderon personas"
+
+    talk = 0
+    posters = 0
+    brochure = 0
+    diffusion = 0
+    ticket = 0
+    others = 0
+    list = db.query(AssistanceConstruction).filter(
+        AssistanceConstruction.visit_id == id).all()
+    for item in list:
+        if "AFICHES" in item.type_name:
+            brochure += item.quantity
+        elif "CHARLA" in item.type_name:
+            talk += item.quantity
+        elif "FOLLETOS" in item.type_name:
+            posters += item.quantity
+        elif "DIFUSIÓN" in item.type_name:
+            diffusion += item.quantity
+        elif "ENTRADAS" in item.type_name:
+            ticket += item.quantity
+        else:
+            others += item.quantity
+
     data = {"construction_name": visit.construction_name,
             "user": report_in.user,
             "correlative": str(visit.id),
@@ -130,18 +159,30 @@ def create_report(id: int, report_in: VisitReportSchema, db: Session = Depends(g
             "user_phone": report_in.user_phone,
             "relevant": report_in.relevant,
             "observations": report_in.observations,
-            "total": str(total_assistance)}
+            "total": str(total_assistance),
+            "table_data": [
+                {"display": "Trabjadores atendidos",
+                    "data": total_formatted},
+                {"display": "Charlas", "data": talk},
+                {"display": "Afiches", "data": posters},
+                {"display": "Difusión", "data": diffusion},
+                {"display": "Entradas", "data": ticket},
+                {"display": "Otros", "data": others},
+                {"display": "Casos relevantes", "data": report_in.relevant},
+                {"display": "Observaciones de la visita",
+                    "data": report_in.observations},
+            ]
+            }
+    report_upload = create_visit_report(data)
 
-    report_name = create_visit_report(data)
-
-    visit.report_key = report_name
-    visit.report_url = report_name
+    #visit.report_key = report_upload["file_key"]
+    #visit.report_url = report_upload["file_url"]
 
     db.add(visit)
     db.commit()
     db.refresh(visit)
 
-    return {"msg": "Reporte creado"}
+    return {"message": "Reporte creado"}
 
 
 @ router.post("")
