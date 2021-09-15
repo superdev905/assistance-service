@@ -175,8 +175,8 @@ def create_report(id: int, report_in: VisitReportSchema, db: Session = Depends(g
             }
     report_upload = create_visit_report(data)
 
-    #visit.report_key = report_upload["file_key"]
-    #visit.report_url = report_upload["file_url"]
+    visit.report_key = report_upload["file_key"]
+    visit.report_url = report_upload["file_url"]
 
     db.add(visit)
     db.commit()

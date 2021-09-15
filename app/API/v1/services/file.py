@@ -1,13 +1,10 @@
 import requests
-from io import BytesIO, SEEK_SET
-from reportlab.pdfgen import canvas
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
-from reportlab.platypus import Paragraph, Table, TableStyle
+from io import BytesIO
+from reportlab.platypus import Paragraph, Table
 from reportlab.platypus import SimpleDocTemplate
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
-from reportlab.platypus import Paragraph, Spacer, Table, Image
+from reportlab.platypus import Paragraph, Table
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from app.settings import SERVICES
 from ..helpers.format_date import format_date_to_string
@@ -97,6 +94,5 @@ def create_visit_report(data):
     files = {'file': (report_name,  buffer.getvalue(), "application/pdf")}
     response = requests.post(
         SERVICES["parameters"]+"/file/upload", files=files)
-    print(response.json())
     buffer.seek(0)
     return response.json()
