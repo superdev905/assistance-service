@@ -1,6 +1,3 @@
-import locale
-import time
-import dateparser
 from datetime import datetime
 
 months = ["enero",
