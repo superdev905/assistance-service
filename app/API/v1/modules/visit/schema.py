@@ -64,3 +64,4 @@ class VisitReportSchema(BaseModel):
     user_email: str
     observations: str
     relevant: str
+    date: str

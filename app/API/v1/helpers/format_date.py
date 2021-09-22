@@ -23,10 +23,10 @@ dayNames = ["Lunes",
             "Domingo"]
 
 
-def format_date_to_string():
+def format_date_to_string(date: datetime):
 
-    now = datetime.now()
-
+    now = date
+    print(now)
     month = months[now.month-1]
     dayName = dayNames[now.weekday()]
 

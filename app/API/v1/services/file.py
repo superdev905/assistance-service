@@ -7,7 +7,6 @@ from reportlab.lib.units import cm
 from reportlab.platypus import Paragraph, Table
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from app.settings import SERVICES
-from ..helpers.format_date import format_date_to_string
 
 
 def render_item(quantity, end="persona", empty="No se realizaron") -> str:
@@ -35,7 +34,8 @@ def upload_report(filename, file):
 def create_visit_report(data):
 
     buffer = BytesIO()
-    date_string = format_date_to_string()
+    date_string = data["date"]
+    print(data["user"])
     report_name = 'Reporte'+data["correlative"] + ".pdf"
     report = SimpleDocTemplate(buffer,
                                topMargin=2.54*cm,
@@ -48,8 +48,7 @@ def create_visit_report(data):
     hero = "Informo a usted con respecto a la visita realizada el dia " + \
         date_string + " a la obra " + \
         data["construction_name"] + \
-        " por " + \
-        data["user"] + \
+        " por " + data["user"] + \
         " , profesional de atencién en obra de la Fundacion Social C.Ch.C.."
     sub_intro = "En la ocasión se obtuvo el siguiente resultado:"
     table_data = []

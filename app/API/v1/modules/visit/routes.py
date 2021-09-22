@@ -154,6 +154,7 @@ def create_report(id: int, report_in: VisitReportSchema, db: Session = Depends(g
 
     data = {"construction_name": visit.construction_name,
             "user": report_in.user,
+            "date": report_in.date,
             "correlative": str(visit.id),
             "user_email": report_in.user_email,
             "user_phone": report_in.user_phone,
