@@ -32,6 +32,8 @@ def format_date_to_string():
 
     string_date = dayName + " " + \
         str(now.day) + " de " + month + " del " + str(now.year) + \
-        " a las " + "%s: % s" % (now.hour, now.minute)
+        " a las " + \
+        "%s:% s" % (now.hour, now.minute if now.minute >
+                    9 else "0"+str(now.minute))
 
     return string_date
