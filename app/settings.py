@@ -24,6 +24,11 @@ services_hostnames = {
         "testing": BASE_HOSTNAME + ":5194/api/v1",
         "production": BASE_HOSTNAME + ":5104/api/v1",
     },
+    "business": {
+        "development": BASE_HOSTNAME + "/api/v1",
+        "testing": BASE_HOSTNAME + ":5192/api/v1",
+        "production": BASE_HOSTNAME + ":5103/api/v1",
+    },
     "users": {
         "development": BASE_HOSTNAME + ":5500/api/v1",
         "testing": BASE_HOSTNAME + ":5192/api/v1",
@@ -38,4 +43,5 @@ DATABASE_URL = get_db_url(ENV)
 SERVICES = {
     "parameters": services_hostnames["parameters"][ENV],
     "employees": services_hostnames["employees"][ENV],
+    "business": services_hostnames["business"][ENV],
 }

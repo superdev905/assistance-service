@@ -12,6 +12,7 @@ from fastapi_pagination import PaginationParams
 from fastapi_pagination.ext.sqlalchemy import paginate
 from app.database.main import get_database
 from app.settings import SERVICES
+from ...helpers.fetch_data import get_business_data
 from ..assistance_construction.model import AssistanceConstruction
 from ..assistance.model import Assistance
 from .model import Visit
@@ -91,8 +92,15 @@ def get_one(id: int, db: Session = Depends(get_database)):
                             detail="No existe una visita con este" + id)
 
     r = requests.get(SERVICES["parameters"]+"/shift/"+str(visit.shift_id))
+    bussiness = get_business_data(
+        "business", visit.business_id)if visit.business_id else None
+    construction = get_business_data(
+        "constructions", visit.construction_id) if visit.construction_id else None
 
-    return {**visit.__dict__, "shift": r.json()}
+    return {**visit.__dict__,
+            "shift": r.json(),
+            "bussiness": bussiness,
+            "construction": construction}
 
 
 @router.get("/{id}/statistics")
