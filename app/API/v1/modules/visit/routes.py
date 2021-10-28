@@ -18,6 +18,7 @@ from ..assistance.model import Assistance
 from .model import Visit
 from .schema import VisitSchema, VisitCreate, VisitPatchSchema, VisitReportSchema
 from ...services.file import create_visit_report
+from .services import format_business_details, format_construction_details
 
 router = APIRouter(prefix="/visits", tags=["Visitas"])
 
@@ -99,8 +100,8 @@ def get_one(id: int, db: Session = Depends(get_database)):
 
     return {**visit.__dict__,
             "shift": r.json(),
-            "bussiness": bussiness,
-            "construction": construction}
+            "bussiness": format_business_details(bussiness),
+            "construction": format_construction_details(construction)}
 
 
 @router.get("/{id}/statistics")
