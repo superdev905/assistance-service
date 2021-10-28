@@ -29,6 +29,7 @@ class Assistance(Base):
     is_social_case = Column(String(2), nullable=False)
     status = Column(String(50), nullable=False)
     company_report = Column(String(2), nullable=False)
+    company_report_observation = Column(String(400))
     observation = Column(String(255), nullable=False)
     assigned_id = Column(Integer, nullable=False)
     case_id = Column(Integer, nullable=False)

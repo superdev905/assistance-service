@@ -24,6 +24,7 @@ class AssistanceCreate(BaseModel):
     is_social_case: str
     status: str
     company_report: str
+    company_report_observation: Optional[str]
     assigned_id: int
     case_id: int
     task_id: int
