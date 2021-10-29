@@ -36,7 +36,7 @@ def get_blocked_status(visit: Visit) -> bool:
 
 
 def block_visit(db: Session, visit: Visit) -> None:
-    if not get_blocked_status(visit):
+    if get_blocked_status(visit):
         visit.is_active = False
         db.add(visit)
         db.commit()
