@@ -18,7 +18,7 @@ from ..assistance.model import Assistance
 from .model import Visit
 from .schema import VisitSchema, VisitCreate, VisitPatchSchema, VisitReportSchema
 from ...services.file import create_visit_report
-from .services import format_business_details, format_construction_details
+from .services import block_visit, format_business_details, format_construction_details, get_blocked_status
 
 router = APIRouter(prefix="/visits", tags=["Visitas"])
 
@@ -46,7 +46,12 @@ def get_calendar_events(start_date: Optional[datetime] = None,
     if user_id:
         filters.append(Visit.assigned_id == user_id)
 
-    return db.query(Visit).filter(*filters).order_by(Visit.date).all()
+    events = db.query(Visit).filter(*filters).order_by(Visit.date).all()
+
+    for visit in events:
+        block_visit(db, visit)
+
+    return events
 
 
 @router.get("")
@@ -76,7 +81,11 @@ def get_all(user_id: Optional[int] = None,
         search_filters.append(Visit.business_name.ilike(formatted_search))
         search_filters.append(
             Visit.construction_name.ilike(formatted_search))
-    return paginate(db.query(Visit).filter(and_(*filters, or_(*search_filters), Visit.status != "CANCELADA")).order_by(Visit.start_date), params)
+    visits_list = paginate(db.query(Visit).filter(and_(
+        *filters, or_(*search_filters), Visit.status != "CANCELADA")).order_by(Visit.start_date), params)
+    for visit in visits_list.items:
+        block_visit(db, visit)
+    return visits_list
 
 
 @router.get("/{id}")
@@ -201,8 +210,9 @@ def create_one(obj_in: VisitCreate, db: Session = Depends(get_database)):
     Crea una nueva asistencia
 
     """
-    print(obj_in.start_date)
-    saved_event = Visit(**jsonable_encoder(obj_in))
+    visit_obj = jsonable_encoder(obj_in)
+    visit_obj["is_active"] = True
+    saved_event = Visit(**visit_obj)
 
     db.add(saved_event)
     db.commit()
@@ -222,7 +232,9 @@ def update_one(id: int, update_body: VisitCreate, db: Session = Depends(get_data
     if not found_event:
         raise HTTPException(
             status_code=400, detail="Este evento no existe")
-
+    if get_blocked_status(found_event):
+        raise HTTPException(
+            status_code=400, detail="No se puede editar esta visita")
     obj_data = jsonable_encoder(found_event)
 
     if isinstance(update_body, dict):

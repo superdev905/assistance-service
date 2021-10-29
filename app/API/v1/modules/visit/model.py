@@ -1,6 +1,6 @@
 from sqlalchemy.sql.expression import null
 from sqlalchemy.sql.functions import func
-from sqlalchemy.sql.sqltypes import DateTime, Time
+from sqlalchemy.sql.sqltypes import Boolean, DateTime, Time
 from app.database.base_class import Base
 from sqlalchemy import Column, Integer, String
 
@@ -13,6 +13,7 @@ class Visit(Base):
     date = Column(DateTime, nullable=False)
     start_date = Column(DateTime(timezone=True), nullable=False)
     end_date = Column(DateTime(timezone=True), nullable=False)
+    is_active = Column(Boolean, nullable=False, server_default="1")
     shift_id = Column(Integer, nullable=False)
     shift_name = Column(String(120))
     status = Column(String(15), nullable=False, default="PROGRAMADA")
