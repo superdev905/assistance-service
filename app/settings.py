@@ -44,4 +44,5 @@ SERVICES = {
     "parameters": services_hostnames["parameters"][ENV],
     "employees": services_hostnames["employees"][ENV],
     "business": services_hostnames["business"][ENV],
+    "users": services_hostnames["users"][ENV],
 }

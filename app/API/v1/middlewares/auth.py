@@ -1,5 +1,10 @@
+import json
 from fastapi import Request, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from urllib3 import PoolManager
+from app.settings import SERVICES
+
+http = PoolManager()
 
 
 class JWTBearer(HTTPBearer):
@@ -11,24 +16,25 @@ class JWTBearer(HTTPBearer):
         if credentials:
             if not credentials.scheme == "Bearer":
                 raise HTTPException(
-                    status_code=403, detail="Formato de token inválid")
-            validation = self.verify_jwt(credentials.credentials)
-            if not validation["isTokenValid"]:
-                raise HTTPException(
-                    status_code=403, detail="Token inválido o expirado")
-            request.user_id = validation["user_id"]
-            return credentials.credentials
+                    status_code=403, detail="Formato de token inválido")
+            user_id = self.verify_jwt(credentials.credentials)
+            request.user_id = user_id
+            request.token = credentials.credentials
+
         else:
             raise HTTPException(
                 status_code=403, detail="Authorización inválida")
 
-    def verify_jwt(self, jwtoken: str) -> bool:
-        isTokenValid: bool = False
-        try:
-            #payload = decodeJWT(jwtoken)
-            pass
-        except:
-            payload = None
-        if payload:
-            isTokenValid = True
-        return {"isTokenValid": isTokenValid, "user_id": payload["sub"]}
+    def verify_jwt(self, jwtoken: str) -> int:
+
+        user_req = http.request(
+            'GET', SERVICES["users"]+'/auth/me', headers={
+                "Authorization": "Bearer %s" % jwtoken
+            })
+        if user_req.status == 403:
+            raise HTTPException(
+                status_code=403, detail="Token inválido o expirado")
+        if user_req.status == 500:
+            raise HTTPException(
+                status_code=403, detail="Formato de token inválido")
+        return int(json.loads(user_req.data)["id"])

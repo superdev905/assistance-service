@@ -1,6 +1,6 @@
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class VisitCreate(BaseModel):
@@ -65,3 +65,8 @@ class VisitReportSchema(BaseModel):
     observations: str
     relevant: str
     date: str
+
+
+class VisitsExport(BaseModel):
+    start_date: datetime = Field(alias="startDate")
+    end_date: datetime = Field(alias="endDate")

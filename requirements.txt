@@ -68,4 +68,5 @@ uvloop==0.14.0
 watchgod==0.6
 websockets==8.1
 wrapt==1.12.1
+XlsxWriter==3.0.2
 zipp==3.5.0

@@ -1,26 +1,29 @@
 import requests
 from datetime import datetime
 from typing import Optional
-from fastapi import status, APIRouter
+from fastapi import status, APIRouter, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
 from fastapi.param_functions import Depends
+from starlette.responses import StreamingResponse
 from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql.functions import func
 from fastapi_pagination import PaginationParams
 from fastapi_pagination.ext.sqlalchemy import paginate
 from app.database.main import get_database
 from app.settings import SERVICES
+from ...middlewares.auth import JWTBearer
 from ...helpers.fetch_data import get_business_data
 from ..assistance_construction.model import AssistanceConstruction
 from ..assistance.model import Assistance
 from .model import Visit
-from .schema import VisitSchema, VisitCreate, VisitPatchSchema, VisitReportSchema
+from .schema import VisitCreate, VisitPatchSchema, VisitReportSchema, VisitsExport
 from ...services.file import create_visit_report
-from .services import block_visit, format_business_details, format_construction_details, get_blocked_status
+from .services import block_visit, format_business_details, format_construction_details, get_blocked_status, generate_visits_excel
 
-router = APIRouter(prefix="/visits", tags=["Visitas"])
+router = APIRouter(
+    prefix="/visits", tags=["Visitas"], dependencies=[Depends(JWTBearer())])
 
 
 @router.get("/calendar")
@@ -220,7 +223,36 @@ def create_one(obj_in: VisitCreate, db: Session = Depends(get_database)):
     return saved_event
 
 
-@ router.put("/{id}")
+@router.post("/export")
+def export_visits(req: Request, body: VisitsExport, db: Session = Depends(get_database)):
+    """
+    Exporta las visitas a un archivo excel
+
+    """
+    file_name = "Visitas"
+    headers = {
+        'Content-Disposition': "attachment; filename=" + file_name + ".xlsx"
+    }
+
+    filters = []
+
+    filters.append(Visit.start_date >= body.start_date)
+    filters.append(Visit.end_date <= Visit.end_date)
+    filters.append(Visit.assigned_id <= req.user_id)
+
+    result = db.query(Visit).filter(
+        *filters).order_by(Visit.start_date.desc()).all()
+    formatted_visits = []
+    for visit in result:
+        formatted_visits.append(visit.__dict__)
+
+    buffer_export = generate_visits_excel(
+        req, formatted_visits, body.start_date, body.end_date)
+
+    return StreamingResponse(buffer_export, headers=headers)
+
+
+@router.put("/{id}")
 def update_one(id: int, update_body: VisitCreate, db: Session = Depends(get_database)):
     """
     Actualiza un evento
