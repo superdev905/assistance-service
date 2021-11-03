@@ -65,7 +65,7 @@ class ReportContact(BaseModel):
 
 
 class VisitReportSchema(BaseModel):
-    user: str
+    user_name: str
     user_phone: str
     user_email: str
     observations: str

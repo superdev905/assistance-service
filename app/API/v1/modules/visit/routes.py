@@ -17,10 +17,9 @@ from ...middlewares.auth import JWTBearer
 from ...helpers.fetch_data import get_business_data
 from ..assistance_construction.model import AssistanceConstruction
 from ..assistance.model import Assistance
-from .model import Visit
+from .model import Visit, VisitReport
 from .schema import VisitCreate, VisitPatchSchema, VisitReportSchema, VisitsExport
-from ...services.file import create_visit_report
-from .services import block_visit, create_report_contacts, format_business_details, format_construction_details, get_blocked_status, generate_visits_excel
+from .services import block_visit, format_business_details, format_construction_details, generate_visit_report, get_blocked_status, generate_visits_excel
 
 router = APIRouter(
     prefix="/visits", tags=["Visitas"], dependencies=[Depends(JWTBearer())])
@@ -109,15 +108,18 @@ def get_one(id: int, db: Session = Depends(get_database)):
         "business", visit.business_id)if visit.business_id else None
     construction = get_business_data(
         "constructions", visit.construction_id) if visit.construction_id else None
+    report = db.query(VisitReport).filter(
+        and_(VisitReport.visit_id == id, VisitReport.is_active == True)).first()
 
     return {**visit.__dict__,
             "shift": r.json(),
             "bussiness": format_business_details(bussiness),
-            "construction": format_construction_details(construction)}
+            "construction": format_construction_details(construction),
+            "report": report}
 
 
 @router.get("/{id}/statistics")
-def delete_one(id: int, db: Session = Depends(get_database)):
+def get_one_statistics(id: int, db: Session = Depends(get_database)):
     """
     Obtiene las estadisticas de las 
 
@@ -142,71 +144,45 @@ def create_report(req: Request, id: int, report_in: VisitReportSchema, db: Sessi
     if not visit:
         raise HTTPException(
             status_code=400, detail="Esta visita no existe")
-    total_formatted = ""
-    total_assistance = len(db.query(Assistance).filter(
-        Assistance.visit_id == id).all())
-    if(total_assistance > 0):
-        total_formatted = str(total_assistance) + \
-            " personas" if total_assistance > 1 else "persona"
-    else:
-        total_formatted = "No se atienderon personas"
 
-    talk = 0
-    posters = 0
-    brochure = 0
-    diffusion = 0
-    ticket = 0
-    others = 0
-    list = db.query(AssistanceConstruction).filter(
-        AssistanceConstruction.visit_id == id).all()
-    for item in list:
-        if "AFICHES" in item.type_name:
-            brochure += item.quantity
-        elif "CHARLA" in item.type_name:
-            talk += item.quantity
-        elif "FOLLETOS" in item.type_name:
-            posters += item.quantity
-        elif "DIFUSIÓN" in item.type_name:
-            diffusion += item.quantity
-        elif "ENTRADAS" in item.type_name:
-            ticket += item.quantity
-        else:
-            others += item.quantity
-
-    data = {"construction_name": visit.construction_name,
-            "user": report_in.user,
-            "date": report_in.date,
-            "correlative": str(visit.id),
-            "user_email": report_in.user_email,
-            "user_phone": report_in.user_phone,
-            "relevant": report_in.relevant,
-            "observations": report_in.observations,
-            "total": str(total_assistance),
-            "table_data": [
-                {"display": "Trabjadores atendidos",
-                    "data": total_formatted},
-                {"display": "Charlas", "data": talk},
-                {"display": "Afiches", "data": posters},
-                {"display": "Difusión", "data": diffusion},
-                {"display": "Entradas", "data": ticket},
-                {"display": "Otros", "data": others},
-                {"display": "Casos relevantes", "data": report_in.relevant},
-                {"display": "Observaciones de la visita",
-                    "data": report_in.observations},
-            ]
-            }
-    report_upload = create_visit_report(data)
-
-    visit.report_key = report_upload["file_key"]
-    visit.report_url = report_upload["file_url"]
-    if report_in.contacts:
-        create_report_contacts(db, report_in.contacts, visit.id, req.user_id)
-
-    db.add(visit)
-    db.commit()
-    db.refresh(visit)
+    generate_visit_report(db, id, report_in, req.user_id)
 
     return {"message": "Reporte creado"}
+
+
+@router.put("/{id}/report")
+def update_report(req: Request, id: int, report_in: VisitReportSchema, db: Session = Depends(get_database)):
+    """
+    Actualiza el reporte de la visita, deshabilita la version anterior y crea una nueva
+    ---
+    - **id**: id de asistencia/visita
+    """
+    visit = db.query(Visit).filter(Visit.id == id).first()
+
+    if not visit:
+        raise HTTPException(
+            status_code=400, detail="Esta visita no existe")
+    if visit.status == "TERMINADA":
+        raise HTTPException(
+            status_code=400, detail="No se puede editar el reporte de esta visita completada")
+
+    previous_reports = db.query(VisitReport).filter(
+        VisitReport.visit_id == id).all()
+
+    if len(previous_reports) == 0:
+        raise HTTPException(
+            status_code=400, detail="Esta visita no tiene un reporte creado")
+
+    for report in previous_reports:
+        if report.is_active:
+            report.is_active = False
+            db.add(report)
+            db.commit()
+            db.flush(report)
+
+    generate_visit_report(db, id, report_in, req.user_id)
+
+    return {"message": "Reporte actualizado"}
 
 
 @ router.post("")

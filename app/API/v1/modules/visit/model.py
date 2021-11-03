@@ -25,23 +25,47 @@ class Visit(Base):
     business_name = Column(String(150))
     construction_name = Column(String(150))
     observation = Column(String(500), nullable=False)
-    report_url = Column(String(255))
-    report_key = Column(String(255))
     created_by = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True),
                         nullable=False, server_default=func.now())
     update_at = Column(DateTime(timezone=True),
                        server_default=func.now(), onupdate=func.now())
+    reports = relationship(
+        "VisitReport", back_populates="visit", lazy="select")
+
+
+class VisitReport(Base):
+    __tablename__ = "visit_report"
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    user_name = Column(String(250), nullable=False)
+    user_phone = Column(String(9))
+    user_email = Column(String(100), nullable=False)
+    observations = Column(String(800), nullable=False)
+    relevant = Column(String(800), nullable=False)
+    is_active = Column(Boolean, nullable=False)
+    report_url = Column(String(255), nullable=False)
+    report_key = Column(String(255), nullable=False)
+    create_date = Column(DateTime(timezone=True),
+                         nullable=False, server_default=func.now())
+    visit_id = Column(Integer, ForeignKey(
+        "visit.id", ondelete="CASCADE"), nullable=False)
+    created_by = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True),
+                        nullable=False, server_default=func.now())
+    update_at = Column(DateTime(timezone=True),
+                       server_default=func.now(), onupdate=func.now())
+    visit = relationship(
+        "Visit", back_populates="reports", lazy="select")
     contacts = relationship(
-        "ReportTarget", back_populates="visit", lazy="joined")
+        "ReportTarget", back_populates="visit_report", lazy="joined")
 
 
 class ReportTarget(Base):
     __tablename__ = "report_target"
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     contact_id = Column(Integer, nullable=False)
-    visit_id = Column(Integer, ForeignKey(
-        "visit.id", ondelete="CASCADE"), nullable=False)
+    visit_report_id = Column(Integer, ForeignKey(
+        "visit_report.id", ondelete="CASCADE"), nullable=False)
     contact_names = Column(String(250), nullable=False)
     contact_email = Column(String(100), nullable=False)
     created_by = Column(Integer, nullable=False)
@@ -49,5 +73,5 @@ class ReportTarget(Base):
                         nullable=False, server_default=func.now())
     update_at = Column(DateTime(timezone=True),
                        server_default=func.now(), onupdate=func.now())
-    visit = relationship(
-        "Visit", back_populates="contacts", lazy="joined")
+    visit_report = relationship(
+        "VisitReport", back_populates="contacts", lazy="joined")

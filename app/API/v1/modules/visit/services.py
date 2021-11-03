@@ -7,7 +7,11 @@ from io import BytesIO
 from datetime import datetime, timedelta
 from sqlalchemy.orm.session import Session
 from ...helpers.fetch_data import fetch_parameter_data, fetch_users_service
-from .model import Visit, ReportTarget
+from ...services.file import create_visit_report
+from ..assistance.model import Assistance
+from ..assistance_construction.model import AssistanceConstruction
+from .schema import VisitReportSchema
+from .model import Visit, ReportTarget, VisitReport
 
 
 def format_business_details(details: dict) -> dict:
@@ -137,12 +141,94 @@ def generate_visits_excel(req: Request, list: List[dict], start_date: datetime, 
     return output
 
 
-def create_report_contacts(db: Session, contacts: List, visit_id: int, user_id: int) -> None:
+def create_report_contacts(db: Session, contacts: List, visit_report_id: int, user_id: int) -> None:
     for item in contacts:
         new_contact = jsonable_encoder(item)
         new_contact["created_by"] = user_id
-        new_contact["visit_id"] = visit_id
+        new_contact["visit_report_id"] = visit_report_id
         db_contact = ReportTarget(**new_contact)
         db.add(db_contact)
         db.commit()
         db.flush(db_contact)
+
+
+def generate_report_and_upload(db: Session, visit_id: int, body: VisitReportSchema):
+    visit = db.query(Visit).filter(Visit.id == visit_id).first()
+    total_formatted = ""
+    total_assistance = len(db.query(Assistance).filter(
+        Assistance.visit_id == visit_id).all())
+    if(total_assistance > 0):
+        total_formatted = str(total_assistance) + \
+            " personas" if total_assistance > 1 else "persona"
+    else:
+        total_formatted = "No se atienderon personas"
+
+    talk = 0
+    posters = 0
+    brochure = 0
+    diffusion = 0
+    ticket = 0
+    others = 0
+    list = db.query(AssistanceConstruction).filter(
+        AssistanceConstruction.visit_id == visit_id).all()
+    for item in list:
+        if "AFICHES" in item.type_name:
+            brochure += item.quantity
+        elif "CHARLA" in item.type_name:
+            talk += item.quantity
+        elif "FOLLETOS" in item.type_name:
+            posters += item.quantity
+        elif "DIFUSIÓN" in item.type_name:
+            diffusion += item.quantity
+        elif "ENTRADAS" in item.type_name:
+            ticket += item.quantity
+        else:
+            others += item.quantity
+
+    data = {"construction_name": visit.construction_name,
+            "user": body.user_name,
+            "date": body.date,
+            "correlative": str(visit.id),
+            "user_email": body.user_email,
+            "user_phone": body.user_phone,
+            "relevant": body.relevant,
+            "observations": body.observations,
+            "total": str(total_assistance),
+            "table_data": [
+                {"display": "Trabjadores atendidos",
+                    "data": total_formatted},
+                {"display": "Charlas", "data": talk},
+                {"display": "Afiches", "data": posters},
+                {"display": "Difusión", "data": diffusion},
+                {"display": "Entradas", "data": ticket},
+                {"display": "Otros", "data": others},
+                {"display": "Casos relevantes", "data": body.relevant},
+                {"display": "Observaciones de la visita",
+                    "data": body.observations},
+            ]
+            }
+    report_upload = create_visit_report(data)
+
+    return report_upload
+
+
+def generate_visit_report(db: Session, visit_id: int, body: VisitReportSchema, user_id: int) -> None:
+
+    report = generate_report_and_upload(db, visit_id, body)
+
+    obj_report = jsonable_encoder(body)
+    del obj_report["contacts"]
+    del obj_report["date"]
+    obj_report["created_by"] = user_id
+    obj_report["is_active"] = True
+    obj_report["visit_id"] = visit_id
+    obj_report["report_key"] = report["file_key"]
+    obj_report["report_url"] = report["file_url"]
+    obj_report["create_date"] = datetime.now()
+    db_report = VisitReport(**obj_report)
+    db.add(db_report)
+    db.commit()
+    db.flush(db_report)
+
+    if body.contacts:
+        create_report_contacts(db, body.contacts, db_report.id, user_id)
