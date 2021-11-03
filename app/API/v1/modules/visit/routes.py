@@ -20,7 +20,7 @@ from ..assistance.model import Assistance
 from .model import Visit
 from .schema import VisitCreate, VisitPatchSchema, VisitReportSchema, VisitsExport
 from ...services.file import create_visit_report
-from .services import block_visit, format_business_details, format_construction_details, get_blocked_status, generate_visits_excel
+from .services import block_visit, create_report_contacts, format_business_details, format_construction_details, get_blocked_status, generate_visits_excel
 
 router = APIRouter(
     prefix="/visits", tags=["Visitas"], dependencies=[Depends(JWTBearer())])
@@ -131,7 +131,7 @@ def delete_one(id: int, db: Session = Depends(get_database)):
 
 
 @router.post("/{id}/report")
-def create_report(id: int, report_in: VisitReportSchema, db: Session = Depends(get_database)):
+def create_report(req: Request, id: int, report_in: VisitReportSchema, db: Session = Depends(get_database)):
     """
     Crea el reporte de la visita
     ---
@@ -199,6 +199,8 @@ def create_report(id: int, report_in: VisitReportSchema, db: Session = Depends(g
 
     visit.report_key = report_upload["file_key"]
     visit.report_url = report_upload["file_url"]
+    if report_in.contacts:
+        create_report_contacts(db, report_in.contacts, visit.id, req.user_id)
 
     db.add(visit)
     db.commit()

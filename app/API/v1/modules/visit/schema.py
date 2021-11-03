@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -58,6 +58,12 @@ class VisitSchema (VisitCreate):
     id: int
 
 
+class ReportContact(BaseModel):
+    contact_id: int
+    contact_names: str
+    contact_email: str
+
+
 class VisitReportSchema(BaseModel):
     user: str
     user_phone: str
@@ -65,6 +71,7 @@ class VisitReportSchema(BaseModel):
     observations: str
     relevant: str
     date: str
+    contacts: Optional[List[ReportContact]]
 
 
 class VisitsExport(BaseModel):

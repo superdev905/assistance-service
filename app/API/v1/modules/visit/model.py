@@ -1,5 +1,7 @@
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import null
 from sqlalchemy.sql.functions import func
+from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import Boolean, DateTime, Time
 from app.database.base_class import Base
 from sqlalchemy import Column, Integer, String
@@ -30,3 +32,22 @@ class Visit(Base):
                         nullable=False, server_default=func.now())
     update_at = Column(DateTime(timezone=True),
                        server_default=func.now(), onupdate=func.now())
+    contacts = relationship(
+        "ReportTarget", back_populates="visit", lazy="joined")
+
+
+class ReportTarget(Base):
+    __tablename__ = "report_target"
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    contact_id = Column(Integer, nullable=False)
+    visit_id = Column(Integer, ForeignKey(
+        "visit.id", ondelete="CASCADE"), nullable=False)
+    contact_names = Column(String(250), nullable=False)
+    contact_email = Column(String(100), nullable=False)
+    created_by = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True),
+                        nullable=False, server_default=func.now())
+    update_at = Column(DateTime(timezone=True),
+                       server_default=func.now(), onupdate=func.now())
+    visit = relationship(
+        "Visit", back_populates="contacts", lazy="joined")

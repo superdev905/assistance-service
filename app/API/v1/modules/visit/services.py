@@ -1,12 +1,13 @@
 
+from fastapi.encoders import jsonable_encoder
 import xlsxwriter
 from fastapi import Request
 from typing import List
-from io import StringIO, BytesIO
+from io import BytesIO
 from datetime import datetime, timedelta
 from sqlalchemy.orm.session import Session
 from ...helpers.fetch_data import fetch_parameter_data, fetch_users_service
-from .model import Visit
+from .model import Visit, ReportTarget
 
 
 def format_business_details(details: dict) -> dict:
@@ -134,3 +135,14 @@ def generate_visits_excel(req: Request, list: List[dict], start_date: datetime, 
     output.seek(0)
 
     return output
+
+
+def create_report_contacts(db: Session, contacts: List, visit_id: int, user_id: int) -> None:
+    for item in contacts:
+        new_contact = jsonable_encoder(item)
+        new_contact["created_by"] = user_id
+        new_contact["visit_id"] = visit_id
+        db_contact = ReportTarget(**new_contact)
+        db.add(db_contact)
+        db.commit()
+        db.flush(db_contact)
