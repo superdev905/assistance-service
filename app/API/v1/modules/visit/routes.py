@@ -109,7 +109,7 @@ def get_one(id: int, db: Session = Depends(get_database)):
     construction = get_business_data(
         "constructions", visit.construction_id) if visit.construction_id else None
     report = db.query(VisitReport).filter(
-        and_(VisitReport.visit_id == id, VisitReport.is_active == True)).first()
+        and_(VisitReport.visit_id == id, VisitReport.is_active == True)).order_by(VisitReport.created_at.desc()).first()
 
     return {**visit.__dict__,
             "shift": r.json(),
