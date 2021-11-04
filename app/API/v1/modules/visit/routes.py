@@ -169,9 +169,9 @@ def update_report(req: Request, id: int, report_in: VisitReportSchema, db: Sessi
     previous_reports = db.query(VisitReport).filter(
         VisitReport.visit_id == id).all()
 
-    if len(previous_reports) == 0:
-        raise HTTPException(
-            status_code=400, detail="Esta visita no tiene un reporte creado")
+    # if len(previous_reports) == 0:
+    #     raise HTTPException(
+    #         status_code=400, detail="Esta visita no tiene un reporte creado")
 
     for report in previous_reports:
         if report.is_active:
