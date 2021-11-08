@@ -232,3 +232,50 @@ def generate_visit_report(db: Session, visit_id: int, body: VisitReportSchema, u
 
     if body.contacts:
         create_report_contacts(db, body.contacts, db_report.id, user_id)
+
+
+def generate_to_attend_employees_excel(visit_id: int):
+
+    output = BytesIO()
+
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+
+    cell_format = workbook.add_format()
+    cell_format.set_text_wrap()
+
+    headings = [{"name": "Run", "width": 15},
+                {"name": "Nombres", "width": 25},
+                {"name": "Apellidos", "width": 25},
+                {"name": "Nacionalidad", "width": 10},
+                {"name": "Sexo", "width": 8},
+                {"name": "Cargo de obra", "width": 20},
+                ]
+
+    header_style = {
+        'bg_color': '#AED5FF',
+        'color': 'black',
+        'align': 'center',
+        'valign': 'top',
+        'border': 1,
+        'text_wrap': True
+    }
+
+    center_header = workbook.add_format({**header_style, "align": "center"})
+
+    heading_index = 0
+    worksheet.write(
+        1, heading_index, "Trabajadores por atender: Visita " + str(visit_id))
+
+    for head in headings:
+        worksheet.set_column(3, heading_index, head["width"])
+        worksheet.write(
+            3, heading_index, head["name"], center_header)
+        heading_index += 1
+
+    worksheet.hide_gridlines(2)
+
+    workbook.close()
+    output.seek(0)
+
+    return output

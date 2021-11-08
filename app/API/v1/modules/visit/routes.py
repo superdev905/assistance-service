@@ -19,7 +19,7 @@ from ..assistance_construction.model import AssistanceConstruction
 from ..assistance.model import Assistance
 from .model import Visit, VisitReport
 from .schema import VisitCreate, VisitPatchSchema, VisitReportSchema, VisitsExport
-from .services import block_visit, format_business_details, format_construction_details, generate_visit_report, get_blocked_status, generate_visits_excel
+from .services import block_visit, format_business_details, format_construction_details, generate_to_attend_employees_excel, generate_visit_report, get_blocked_status, generate_visits_excel
 
 router = APIRouter(
     prefix="/visits", tags=["Visitas"], dependencies=[Depends(JWTBearer())])
@@ -131,6 +131,27 @@ def get_one_statistics(id: int, db: Session = Depends(get_database)):
     total = len(db.query(Assistance).filter(Assistance.visit_id == id).all())
 
     return {"total": total, "new": 0, "old": total}
+
+
+@router.post("/{id}/attended-employees/export")
+def create_report(id: int,  db: Session = Depends(get_database)):
+    """
+    Exporta los trabajadores por atender
+    ---
+    - **id**: id de asistencia/visita
+    """
+    visit = db.query(Visit).filter(Visit.id == id).first()
+
+    if not visit:
+        raise HTTPException(
+            status_code=400, detail="Esta visita no existe")
+
+    headers = {
+        'Content-Disposition': "attachment; filename=Trabajadores-por-atender.xlsx"
+    }
+    buffer_export = generate_to_attend_employees_excel(visit.id)
+
+    return StreamingResponse(buffer_export, headers=headers)
 
 
 @router.post("/{id}/report")
