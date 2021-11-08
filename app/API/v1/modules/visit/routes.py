@@ -146,8 +146,9 @@ def create_report(id: int,  db: Session = Depends(get_database)):
         raise HTTPException(
             status_code=400, detail="Esta visita no existe")
 
+    file_name = "Trabajadores por atender"
     headers = {
-        'Content-Disposition': "attachment; filename=Trabajadores-por-atender.xlsx"
+        'Content-Disposition': "attachment; filename=" + file_name + ".xlsx"
     }
     buffer_export = generate_to_attend_employees_excel(visit.id)
 
