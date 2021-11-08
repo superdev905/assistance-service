@@ -60,7 +60,8 @@ def get_calendar_events(start_date: Optional[datetime] = None,
 def get_all(user_id: Optional[int] = None,
             start_date: Optional[datetime] = None,
             search: Optional[str] = None,
-            db: Session = Depends(get_database), params: PaginationParams = Depends()):
+            db: Session = Depends(get_database),
+            params: PaginationParams = Depends()):
     """
     Retorna la lista de visitas
     ---

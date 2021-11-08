@@ -13,9 +13,9 @@ class AssistanceCreate(BaseModel):
     source_business: str
     attention_place: str
     contact_method: str
-    business_id: int
+    business_id: Optional[int]
     business_name: Optional[str]
-    construction_id: int
+    construction_id: Optional[int]
     construction_name: Optional[str]
     topic_id: int
     area_id: int
@@ -28,7 +28,7 @@ class AssistanceCreate(BaseModel):
     assigned_id: int
     case_id: int
     task_id: int
-    visit_id: int
+    visit_id: Optional[int]
     observation: str
     attached_url: Optional[str] = ""
     attached_key: Optional[str] = ""

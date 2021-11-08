@@ -1,7 +1,7 @@
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.sql.sqltypes import Boolean, DateTime
+from sqlalchemy.sql.sqltypes import DateTime
 from app.database.base_class import Base
 from sqlalchemy import Column, Integer, String
 
@@ -18,10 +18,10 @@ class Assistance(Base):
     source_business = Column(String(100), nullable=False)
     attention_place = Column(String(255), nullable=False)
     contact_method = Column(String(255), nullable=False)
-    business_id = Column(Integer, nullable=False)
-    business_name = Column(String(255), nullable=False)
-    construction_id = Column(Integer, nullable=False)
-    construction_name = Column(String(255), nullable=False)
+    business_id = Column(Integer)
+    business_name = Column(String(255))
+    construction_id = Column(Integer)
+    construction_name = Column(String(255))
     topic_id = Column(Integer, nullable=False)
     area_id = Column(Integer, nullable=False)
     area_name = Column(String(100), nullable=False)

@@ -5,6 +5,7 @@ from typing import Optional
 from fastapi import status, APIRouter
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.session import Session
 from fastapi.param_functions import Depends
 from sqlalchemy.sql.expression import and_, or_
@@ -111,6 +112,17 @@ def get_attended_list(visit_id: int = None, id_employee: int = None, db: Session
     list = db.query(Assistance).filter(
         and_(*filters)).order_by(Assistance.created_at.desc()).all()
     return list
+
+
+@router.get("/business")
+def get_attended_list(business_id: int = None,
+                      db: Session = Depends(get_database),
+                      params: PaginationParams = Depends()):
+    filters = []
+    filters.append(Assistance.business_id == business_id)
+    query = db.query(Assistance).filter(
+        and_(*filters)).order_by(Assistance.created_at.desc()).options(joinedload(Assistance.visit))
+    return paginate(query, params)
 
 
 @router.get("/{id}")
