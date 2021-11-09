@@ -50,7 +50,7 @@ def get_calendar_events(req: Request, start_date: Optional[datetime] = None,
     for visit in events:
         items.append(
             {**visit.__dict__,
-             "editable": visit.assigned_id == req.user_id,
+             "is_owner": visit.assigned_id == req.user_id,
              "assigned": fetch_users_service(req.token, visit.assigned_id)
              })
         block_visit(db, visit)

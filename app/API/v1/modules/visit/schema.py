@@ -88,8 +88,9 @@ class User (BaseModel):
 
 class VisitCalendarItem(VisitCreate):
     id: int
-    editable: bool
+    is_owner: bool
     assigned: User
+    is_active: bool
 
     class Config:
         allow_population_by_field_name = True
