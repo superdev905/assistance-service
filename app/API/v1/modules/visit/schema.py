@@ -77,3 +77,19 @@ class VisitReportSchema(BaseModel):
 class VisitsExport(BaseModel):
     start_date: datetime = Field(alias="startDate")
     end_date: datetime = Field(alias="endDate")
+
+
+class User (BaseModel):
+    id: int
+    names: str
+    paternal_surname: str
+    maternal_surname: str
+
+
+class VisitCalendarItem(VisitCreate):
+    id: int
+    editable: bool
+    assigned: User
+
+    class Config:
+        allow_population_by_field_name = True

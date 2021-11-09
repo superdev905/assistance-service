@@ -1,6 +1,6 @@
 import requests
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 from fastapi import status, APIRouter, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
@@ -8,28 +8,27 @@ from sqlalchemy.orm.session import Session
 from fastapi.param_functions import Depends
 from starlette.responses import StreamingResponse
 from sqlalchemy.sql.expression import and_, or_
-from sqlalchemy.sql.functions import func
+from sqlalchemy.sql.functions import func, user
 from fastapi_pagination import PaginationParams
 from fastapi_pagination.ext.sqlalchemy import paginate
 from app.database.main import get_database
 from app.settings import SERVICES
 from ...middlewares.auth import JWTBearer
-from ...helpers.fetch_data import get_business_data
+from ...helpers.fetch_data import fetch_users_service, get_business_data
 from ..assistance_construction.model import AssistanceConstruction
 from ..assistance.model import Assistance
 from .model import Visit, VisitReport
-from .schema import VisitCreate, VisitPatchSchema, VisitReportSchema, VisitsExport
+from .schema import VisitCalendarItem, VisitCreate, VisitPatchSchema, VisitReportSchema, VisitsExport
 from .services import block_visit, format_business_details, format_construction_details, generate_to_attend_employees_excel, generate_visit_report, get_blocked_status, generate_visits_excel
 
 router = APIRouter(
     prefix="/visits", tags=["Visitas"], dependencies=[Depends(JWTBearer())])
 
 
-@router.get("/calendar")
-def get_calendar_events(start_date: Optional[datetime] = None,
+@router.get("/calendar", response_model=List[VisitCalendarItem])
+def get_calendar_events(req: Request, start_date: Optional[datetime] = None,
                         end_date: Optional[datetime] = None,
                         status: Optional[str] = None,
-                        user_id: Optional[int] = None,
                         db: Session = Depends(get_database)):
     """
     Optiene las asistencias y visitas para mostrar en el calendario
@@ -45,15 +44,18 @@ def get_calendar_events(start_date: Optional[datetime] = None,
         filters.append(Visit.end_date <= end_date)
     if status:
         filters.append(Visit.status == status)
-    if user_id:
-        filters.append(Visit.assigned_id == user_id)
-
+    items = []
     events = db.query(Visit).filter(*filters).order_by(Visit.date).all()
 
     for visit in events:
+        items.append(
+            {**visit.__dict__,
+             "editable": visit.assigned_id == req.user_id,
+             "assigned": fetch_users_service(req.token, visit.assigned_id)
+             })
         block_visit(db, visit)
 
-    return events
+    return items
 
 
 @router.get("")
