@@ -8,14 +8,16 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.session import Session
 from fastapi.param_functions import Depends
-from sqlalchemy.sql.expression import and_, or_
+from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.functions import func
 from fastapi_pagination import PaginationParams
 from fastapi_pagination.ext.sqlalchemy import paginate
 from app.settings import SERVICES
 from app.database.main import get_database
+from ..attachment.model import Attachment
+from ..attachment.services import save_attachment
 from .model import Assistance
-from .schema import AssistanceSchema, AssistanceCreate, AssistancePatchSchema
+from .schema import AssistanceCreate, AssistancePatchSchema
 
 
 router = APIRouter(prefix="/assistance", tags=["Asistencias"])
@@ -140,14 +142,20 @@ def get_one(id: int, db: Session = Depends(get_database)):
 def create_one(obj_in: AssistanceCreate, db: Session = Depends(get_database)):
     """
     Crea una nueva asistencia
-
     """
-    saved_event = Assistance(**jsonable_encoder(obj_in))
+    new_assistance = jsonable_encoder(obj_in)
+    if obj_in.attachment:
+        attachment = save_attachment(db, obj_in.attachment, obj_in.created_by)
+        new_assistance["attachment_id"] = attachment.id
+    del new_assistance["attachment"]
+    new_assistance["attachment_id"] = attachment.id
 
-    db.add(saved_event)
+    saved_assistance = Assistance(**new_assistance)
+
+    db.add(saved_assistance)
     db.commit()
-    db.refresh(saved_event)
-    return saved_event
+    db.refresh(saved_assistance)
+    return saved_assistance
 
 
 @ router.put("/{id}")

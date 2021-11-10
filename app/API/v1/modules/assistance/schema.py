@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
+from ..attachment.schema import AttachmentCreate
 
 
 class AssistanceCreate(BaseModel):
@@ -30,8 +31,7 @@ class AssistanceCreate(BaseModel):
     task_id: int
     visit_id: Optional[int]
     observation: str
-    attached_url: Optional[str] = ""
-    attached_key: Optional[str] = ""
+    attachment: Optional[AttachmentCreate]
     created_by: int
 
     class Config:
