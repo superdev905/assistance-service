@@ -21,7 +21,7 @@ def get_all(employee_id: Optional[int] = None,
 
     filters = []
 
-    if not employee_id:
+    if employee_id:
         filters.append(Attachment.data_id == employee_id)
         filters.append(Attachment.source_system == "TRABAJADORES")
 
