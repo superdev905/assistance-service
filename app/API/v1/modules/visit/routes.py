@@ -148,7 +148,7 @@ def create_report(id: int,  db: Session = Depends(get_database)):
         raise HTTPException(
             status_code=400, detail="Esta visita no existe")
 
-    file_name = "Trabajadores por atender"
+    file_name = "Trabajadores-por-atender"
     headers = {
         'Content-Disposition': "attachment; filename=" + file_name + ".xlsx"
     }
