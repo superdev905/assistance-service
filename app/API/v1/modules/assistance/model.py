@@ -35,7 +35,6 @@ class Assistance(Base):
     case_id = Column(Integer, nullable=False)
     task_id = Column(Integer, nullable=False)
     visit_id = Column(Integer, ForeignKey("visit.id", ondelete="CASCADE"))
-    attachment_id = Column(Integer, ForeignKey("attachment.id"))
     created_by = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True),
                         nullable=False, server_default=func.now())
@@ -43,4 +42,5 @@ class Assistance(Base):
                        server_default=func.now(), onupdate=func.now())
 
     visit = relationship("Visit", uselist=False)
-    attachment = relationship("Attachment", uselist=False, lazy="joined")
+    attachments = relationship(
+        "Attachment", back_populates="assistance", lazy="joined")

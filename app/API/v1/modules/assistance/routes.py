@@ -144,17 +144,16 @@ def create_one(obj_in: AssistanceCreate, db: Session = Depends(get_database)):
     Crea una nueva asistencia
     """
     new_assistance = jsonable_encoder(obj_in)
-    if obj_in.attachment:
-        attachment = save_attachment(db, obj_in.attachment, obj_in.created_by)
-        new_assistance["attachment_id"] = attachment.id
-    del new_assistance["attachment"]
-    new_assistance["attachment_id"] = attachment.id
-
+    del new_assistance["attachments"]
     saved_assistance = Assistance(**new_assistance)
 
     db.add(saved_assistance)
     db.commit()
     db.refresh(saved_assistance)
+
+    for attach in obj_in.attachments:
+        save_attachment(db, attach, obj_in.created_by, saved_assistance.id)
+
     return saved_assistance
 
 
