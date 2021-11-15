@@ -7,11 +7,12 @@ from fastapi.param_functions import Depends
 from app.database.main import get_database
 from ...middlewares.auth import JWTBearer
 from ...helpers.crud import get_updated_obj
-from .model import VisitReportCategory
+from .model import VisitReportItem
 from .schema import ReportCategoryCreate, ReportCategoryItem
+from .services import seed_items
 
 router = APIRouter(
-    prefix="/visits-report-categories",
+    prefix="/visits-report-items",
     tags=["Items en reporte de visita"],
     dependencies=[Depends(JWTBearer())])
 
@@ -21,7 +22,7 @@ def get_all(db: Session = Depends(get_database)):
     """
     Obtiene los items que se muestran en la tabla de reporte
     """
-    return db.query(VisitReportCategory).filter(VisitReportCategory.is_active == True).all()
+    return db.query(VisitReportItem).filter(VisitReportItem.is_active == True).all()
 
 
 @router.post("", response_model=ReportCategoryItem)
@@ -35,7 +36,7 @@ def create(request: Request, body:  ReportCategoryCreate, db: Session = Depends(
     obj_item = jsonable_encoder(body)
     obj_item["created_by"] = request.user_id
     obj_item["is_active"] = True
-    db_item = VisitReportCategory(**obj_item)
+    db_item = VisitReportItem(**obj_item)
 
     db.add(db_item)
     db.commit()
@@ -53,8 +54,8 @@ def update_one(id: int, body:  ReportCategoryCreate, db: Session = Depends(get_d
     - **name**: Nombre
     - **description**: Descripción item
     """
-    found_item = db.query(VisitReportCategory).filter(
-        VisitReportCategory.id == id).first()
+    found_item = db.query(VisitReportItem).filter(
+        VisitReportItem.id == id).first()
 
     if not found_item:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -80,8 +81,8 @@ def delete_one(id: int, db: Session = Depends(get_database)):
     ---
     - **id**: id del item
     """
-    found_item = db.query(VisitReportCategory).filter(
-        VisitReportCategory.id == id).first()
+    found_item = db.query(VisitReportItem).filter(
+        VisitReportItem.id == id).first()
 
     if not found_item:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -98,3 +99,14 @@ def delete_one(id: int, db: Session = Depends(get_database)):
     db.refresh(found_item)
 
     return {"message": "Item eliminado"}
+
+
+@router.post("/seed")
+def seed_items(request: Request, db: Session = Depends(get_database)):
+    """
+    Registra items
+    ---
+    """
+    seed_items(db, request.user_id)
+
+    return {"message": "Datos creados"}

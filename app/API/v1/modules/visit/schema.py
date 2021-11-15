@@ -64,6 +64,12 @@ class ReportContact(BaseModel):
     contact_email: str
 
 
+class ReportItem(BaseModel):
+    item_name: str
+    item_id: int
+    value: int
+
+
 class VisitReportSchema(BaseModel):
     user_name: str
     user_phone: str
@@ -72,6 +78,7 @@ class VisitReportSchema(BaseModel):
     relevant: str
     date: str
     contacts: Optional[List[ReportContact]]
+    items: Optional[List[ReportItem]]
 
 
 class VisitsExport(BaseModel):
