@@ -17,7 +17,7 @@ from ...middlewares.auth import JWTBearer
 from ...helpers.fetch_data import fetch_users_service, get_business_data
 from ..assistance.model import Assistance
 from .model import Visit, VisitReport, VisitRevision
-from .schema import VisitCalendarItem, VisitCloseSchema, VisitCreate, VisitPatchSchema, VisitReportSchema, VisitsExport
+from .schema import VisitCalendarItem, VisitCloseSchema, VisitCreate, VisitPatchSchema, VisitReportSchema, VisitWorkers, VisitsExport
 from .services import close_visit, format_business_details, format_construction_details, generate_to_attend_employees_excel, generate_visit_report, get_blocked_status, generate_visits_excel
 
 router = APIRouter(
@@ -160,6 +160,29 @@ def get_one_statistics(id: int, db: Session = Depends(get_database)):
     total = len(db.query(Assistance).filter(Assistance.visit_id == id).all())
 
     return {"total": total, "new": 0, "old": total}
+
+
+@router.post("/{id}/workers")
+def set_workers(id: int, body: VisitWorkers, db: Session = Depends(get_database)):
+    """
+    Actualiza la cantidad de trabajadores en visita
+
+    - **id**: visit_id de la visita
+
+    """
+    visit = db.query(Visit).filter(Visit.id == id).first()
+
+    if not visit:
+        raise HTTPException(
+            status_code=400, detail="Esta visita no existe")
+    visit.company_workers = body.company_workers
+    visit.outsourced_workers = body.outsourced_workers
+
+    db.add(visit)
+    db.commit()
+    db.refresh(visit)
+
+    return visit
 
 
 @router.post("/{id}/attended-employees/export")

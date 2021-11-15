@@ -27,6 +27,8 @@ class Visit(Base):
     business_name = Column(String(150))
     construction_name = Column(String(150))
     observation = Column(String(500), nullable=False)
+    company_workers = Column(Integer)
+    outsourced_workers = Column(Integer)
     created_by = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True),
                         nullable=False, server_default=func.now())

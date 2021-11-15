@@ -64,6 +64,14 @@ class ReportContact(BaseModel):
     contact_email: str
 
 
+class VisitWorkers(BaseModel):
+    company_workers: int
+    outsourced_workers: int
+
+    class Config:
+        orm_mode = True
+
+
 class ReportItem(BaseModel):
     item_name: str
     item_id: int
