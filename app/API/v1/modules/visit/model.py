@@ -15,7 +15,10 @@ class Visit(Base):
     date = Column(DateTime, nullable=False)
     start_date = Column(DateTime(timezone=True), nullable=False)
     end_date = Column(DateTime(timezone=True), nullable=False)
+    is_close = Column(Boolean, nullable=False, server_default="0")
+    is_close_pending = Column(Boolean, nullable=False, server_default="0")
     is_active = Column(Boolean, nullable=False, server_default="1")
+    close_revision_id = Column(Integer, ForeignKey("visit_revision.id"))
     shift_id = Column(Integer, nullable=False)
     shift_name = Column(String(120))
     status = Column(String(15), nullable=False, default="PROGRAMADA")
@@ -32,6 +35,8 @@ class Visit(Base):
                        server_default=func.now(), onupdate=func.now())
     reports = relationship(
         "VisitReport", back_populates="visit", lazy="select")
+    close_revision = relationship(
+        "VisitRevision", uselist=False, lazy="joined")
 
 
 class VisitReport(Base):
@@ -75,3 +80,17 @@ class ReportTarget(Base):
                        server_default=func.now(), onupdate=func.now())
     visit_report = relationship(
         "VisitReport", back_populates="contacts", lazy="joined")
+
+
+class VisitRevision(Base):
+    __tablename__ = "visit_revision"
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    type = Column(String(20), nullable=False)
+    date = Column(DateTime(timezone=True), nullable=False)
+    comments = Column(String(800))
+    approver_id = Column(Integer, nullable=False)
+    created_by = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True),
+                        nullable=False, server_default=func.now())
+    update_at = Column(DateTime(timezone=True),
+                       server_default=func.now(), onupdate=func.now())

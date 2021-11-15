@@ -94,3 +94,18 @@ class VisitCalendarItem(VisitCreate):
 
     class Config:
         allow_population_by_field_name = True
+
+
+class VisitCloseSchema (BaseModel):
+    approver_id: int
+    comments: Optional[str]
+    date: datetime
+
+    class Config:
+        orm_mode = True
+        schema_extra = {
+            "example": {
+                "approver_id": 1,
+                "comments": "",
+                "date": datetime.now(),
+            }}

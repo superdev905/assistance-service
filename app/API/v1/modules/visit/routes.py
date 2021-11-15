@@ -15,10 +15,9 @@ from app.database.main import get_database
 from app.settings import SERVICES
 from ...middlewares.auth import JWTBearer
 from ...helpers.fetch_data import fetch_users_service, get_business_data
-from ..assistance_construction.model import AssistanceConstruction
 from ..assistance.model import Assistance
-from .model import Visit, VisitReport
-from .schema import VisitCalendarItem, VisitCreate, VisitPatchSchema, VisitReportSchema, VisitsExport
+from .model import Visit, VisitReport, VisitRevision
+from .schema import VisitCalendarItem, VisitCloseSchema, VisitCreate, VisitPatchSchema, VisitReportSchema, VisitsExport
 from .services import block_visit, format_business_details, format_construction_details, generate_to_attend_employees_excel, generate_visit_report, get_blocked_status, generate_visits_excel
 
 router = APIRouter(
@@ -90,6 +89,34 @@ def get_all(user_id: Optional[int] = None,
         *filters, or_(*search_filters), Visit.status != "CANCELADA")).order_by(Visit.start_date), params)
     for visit in visits_list.items:
         block_visit(db, visit)
+    return visits_list
+
+
+@router.get("/request-close")
+def get_all(search: Optional[str] = None,
+            db: Session = Depends(get_database),
+            params: PaginationParams = Depends()):
+    """
+    Retorna la lista de visitas por cerrar
+    ---
+    Parametros:
+    - **size**: Página de asistencias
+    - **limit**: Número de registros por cada página asistencias
+    """
+    search_filters = []
+    if search:
+        formatted_search = '%{}%'.format(search)
+        search_filters.append(Visit.title.ilike(formatted_search))
+        search_filters.append(Visit.business_name.ilike(formatted_search))
+        search_filters.append(
+            Visit.construction_name.ilike(formatted_search))
+    visits_list = paginate(db.query(Visit).filter(
+        and_(
+            or_(*search_filters),
+            Visit.is_close_pending == True,
+            Visit.status != "CANCELADA")
+    ).order_by(Visit.start_date), params)
+
     return visits_list
 
 
@@ -332,3 +359,70 @@ def delete_one(id: int,  db: Session = Depends(get_database)):
     db.delete(event)
     db.commit()
     return {"message": "Evento eliminado"}
+
+
+@router.post("/{id}/request-close")
+def close_visit(id: int, db: Session = Depends(get_database)):
+    """
+    Solicita cierre de una visita
+
+    - **id**: id de la visita
+    """
+    visit = db.query(Visit).filter(
+        Visit.id == id).first()
+    if not visit:
+        raise HTTPException(
+            status_code=400, detail="Esta visita no existe")
+
+    if visit.is_close:
+        raise HTTPException(
+            status_code=400, detail="Esta visita ya fue cerrada")
+
+    if visit.is_close_pending:
+        raise HTTPException(
+            status_code=400, detail="El cierre de esta visita ya fue solicitada")
+
+    visit.is_close_pending = True
+
+    db.add(visit)
+    db.commit()
+    db.flush(visit)
+    return {"message": "Cierre solicitado"}
+
+
+@router.post("/{id}/close")
+def close_visit(req: Request, id: int, body: VisitCloseSchema,  db: Session = Depends(get_database)):
+    """
+    Bloquea una visita
+
+    - **id**: id de la visita
+
+    """
+    visit = db.query(Visit).filter(
+        Visit.id == id).first()
+    if not visit:
+        raise HTTPException(
+            status_code=400, detail="Esta visita no existe")
+
+    if visit.is_close:
+        raise HTTPException(
+            status_code=400, detail="Esta visita ya fue cerrada")
+
+    close_revision = jsonable_encoder(body)
+    close_revision["created_by"] = req.user_id
+    close_revision["type"] = "CLOSE"
+
+    saved_revision = VisitRevision(**close_revision)
+
+    db.add(saved_revision)
+    db.commit()
+    db.refresh(saved_revision)
+
+    visit.is_close = True
+    visit.is_close_pending = False
+    visit.close_revision_id = saved_revision.id
+
+    db.add(visit)
+    db.commit()
+    db.flush(visit)
+    return {"message": "Visita cerrada"}
