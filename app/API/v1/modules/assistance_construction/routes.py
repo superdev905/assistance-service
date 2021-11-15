@@ -2,6 +2,7 @@ from typing import Optional
 from fastapi.param_functions import Depends
 from fastapi_crudrouter import SQLAlchemyCRUDRouter
 from app.database.main import SessionLocal, get_database
+from ...middlewares.auth import JWTBearer
 from .model import AssistanceConstruction
 from .schema import AssistanceConstructionSchema, AssistanceConstructionCreate
 
@@ -13,7 +14,8 @@ router = SQLAlchemyCRUDRouter(
     db=get_database,
     prefix="assistance-construction",
     tags=["Asistencia en obra"],
-    delete_all_route=False
+    delete_all_route=False,
+    dependencies=[Depends(JWTBearer())]
 )
 
 

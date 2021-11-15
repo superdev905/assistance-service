@@ -8,7 +8,7 @@ from sqlalchemy.orm.session import Session
 from fastapi.param_functions import Depends
 from starlette.responses import StreamingResponse
 from sqlalchemy.sql.expression import and_, or_
-from sqlalchemy.sql.functions import func, user
+from sqlalchemy.sql.functions import func
 from fastapi_pagination import PaginationParams
 from fastapi_pagination.ext.sqlalchemy import paginate
 from app.database.main import get_database
@@ -18,7 +18,7 @@ from ...helpers.fetch_data import fetch_users_service, get_business_data
 from ..assistance.model import Assistance
 from .model import Visit, VisitReport, VisitRevision
 from .schema import VisitCalendarItem, VisitCloseSchema, VisitCreate, VisitPatchSchema, VisitReportSchema, VisitsExport
-from .services import block_visit, format_business_details, format_construction_details, generate_to_attend_employees_excel, generate_visit_report, get_blocked_status, generate_visits_excel
+from .services import close_visit, format_business_details, format_construction_details, generate_to_attend_employees_excel, generate_visit_report, get_blocked_status, generate_visits_excel
 
 router = APIRouter(
     prefix="/visits", tags=["Visitas"], dependencies=[Depends(JWTBearer())])
@@ -52,7 +52,7 @@ def get_calendar_events(req: Request, start_date: Optional[datetime] = None,
              "is_owner": visit.assigned_id == req.user_id,
              "assigned": fetch_users_service(req.token, visit.assigned_id)
              })
-        block_visit(db, visit)
+        close_visit(db, visit)
 
     return items
 
@@ -88,7 +88,7 @@ def get_all(user_id: Optional[int] = None,
     visits_list = paginate(db.query(Visit).filter(and_(
         *filters, or_(*search_filters), Visit.status != "CANCELADA")).order_by(Visit.start_date), params)
     for visit in visits_list.items:
-        block_visit(db, visit)
+        close_visit(db, visit)
     return visits_list
 
 
@@ -244,7 +244,7 @@ def create_one(obj_in: VisitCreate, db: Session = Depends(get_database)):
 
     """
     visit_obj = jsonable_encoder(obj_in)
-    visit_obj["is_active"] = True
+    visit_obj["is_close"] = False
     saved_event = Visit(**visit_obj)
 
     db.add(saved_event)
@@ -362,7 +362,7 @@ def delete_one(id: int,  db: Session = Depends(get_database)):
 
 
 @router.post("/{id}/request-close")
-def close_visit(id: int, db: Session = Depends(get_database)):
+def request_close_visit(id: int, db: Session = Depends(get_database)):
     """
     Solicita cierre de una visita
 
@@ -391,7 +391,7 @@ def close_visit(id: int, db: Session = Depends(get_database)):
 
 
 @router.post("/{id}/close")
-def close_visit(req: Request, id: int, body: VisitCloseSchema,  db: Session = Depends(get_database)):
+def close_one_visit(req: Request, id: int, body: VisitCloseSchema,  db: Session = Depends(get_database)):
     """
     Bloquea una visita
 

@@ -17,7 +17,6 @@ class Visit(Base):
     end_date = Column(DateTime(timezone=True), nullable=False)
     is_close = Column(Boolean, nullable=False, server_default="0")
     is_close_pending = Column(Boolean, nullable=False, server_default="0")
-    is_active = Column(Boolean, nullable=False, server_default="1")
     close_revision_id = Column(Integer, ForeignKey("visit_revision.id"))
     shift_id = Column(Integer, nullable=False)
     shift_name = Column(String(120))

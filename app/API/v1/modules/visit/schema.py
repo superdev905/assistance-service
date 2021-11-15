@@ -90,7 +90,7 @@ class VisitCalendarItem(VisitCreate):
     id: int
     is_owner: bool
     assigned: User
-    is_active: bool
+    is_close: bool
 
     class Config:
         allow_population_by_field_name = True

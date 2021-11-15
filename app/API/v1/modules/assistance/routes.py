@@ -14,13 +14,15 @@ from fastapi_pagination import PaginationParams
 from fastapi_pagination.ext.sqlalchemy import paginate
 from app.settings import SERVICES
 from app.database.main import get_database
-from ..attachment.model import Attachment
+from ...middlewares.auth import JWTBearer
 from ..attachment.services import save_attachment
 from .model import Assistance
 from .schema import AssistanceCreate, AssistancePatchSchema
 
 
-router = APIRouter(prefix="/assistance", tags=["Asistencias"])
+router = APIRouter(prefix="/assistance",
+                   tags=["Asistencias"],
+                   dependencies=[Depends(JWTBearer())])
 
 
 @router.get("")

@@ -39,15 +39,17 @@ def format_construction_details(details: dict) -> dict:
 
 def get_blocked_status(visit: Visit) -> bool:
     current_date = datetime.strftime(datetime.now(), '%Y-%m-%d')
-    end_date = datetime.strftime(
-        visit.end_date + timedelta(hours=48), '%Y-%m-%d')
 
+    end_date = datetime.strftime(
+        visit.end_date.replace(hour=23, minute=59, second=59, microsecond=999), '%Y-%m-%d')
+
+    print(current_date >= end_date)
     return current_date >= end_date
 
 
-def block_visit(db: Session, visit: Visit) -> None:
-    if get_blocked_status(visit) and visit.is_active:
-        visit.is_active = False
+def close_visit(db: Session, visit: Visit) -> None:
+    if get_blocked_status(visit) and not visit.is_close:
+        visit.is_close = True
         db.add(visit)
         db.commit()
         db.flush(visit)
