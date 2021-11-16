@@ -121,7 +121,7 @@ def get_all(search: Optional[str] = None,
 
 
 @router.get("/{id}")
-def get_one(id: int, db: Session = Depends(get_database)):
+def get_one(req: Request, id: int, db: Session = Depends(get_database)):
     """
     Optiene una visita
     ---
@@ -141,11 +141,20 @@ def get_one(id: int, db: Session = Depends(get_database)):
     report = db.query(VisitReport).filter(
         and_(VisitReport.visit_id == id, VisitReport.is_active == True)).order_by(VisitReport.created_at.desc()).first()
 
+    assigned_user = fetch_users_service(req.token, visit.assigned_id)
+
+    assigned_user = {
+        "id": assigned_user["id"],
+        "names": assigned_user["names"],
+        "paternal_surname": assigned_user["paternal_surname"],
+        "maternal_surname": assigned_user["maternal_surname"]}
+
     return {**visit.__dict__,
             "shift": r.json(),
             "bussiness": format_business_details(bussiness),
             "construction": format_construction_details(construction),
-            "report": report}
+            "report": report,
+            "assigned": assigned_user}
 
 
 @router.get("/{id}/statistics")

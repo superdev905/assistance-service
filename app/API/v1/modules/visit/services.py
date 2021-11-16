@@ -168,7 +168,6 @@ def generate_report_and_upload(db: Session, visit_id: int, body: VisitReportSche
     table_data = []
     table_data.append(
         {"display": "Trabjadores atendidos", "data": total_formatted})
-    print(body)
     for item in body.items:
         table_data.append(
             {"display": item.item_name, "data": str(item.value)})
