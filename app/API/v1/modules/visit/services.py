@@ -48,11 +48,12 @@ def get_blocked_status(visit: Visit) -> bool:
 
 
 def close_visit(db: Session, visit: Visit) -> None:
-    if get_blocked_status(visit) and not visit.is_close:
-        visit.is_close = True
-        db.add(visit)
-        db.commit()
-        db.flush(visit)
+    if get_blocked_status(visit):
+        if not visit.is_close:
+            visit.is_close = True
+            db.add(visit)
+            db.commit()
+            db.flush(visit)
 
 
 def get_assigned_user(req: Request, id: int) -> str:
