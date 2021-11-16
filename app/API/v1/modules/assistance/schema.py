@@ -82,3 +82,40 @@ class AssistancePatchSchema (BaseModel):
 
 class AssistanceSchema (AssistanceCreate):
     id: int
+
+
+class Parameter(BaseModel):
+    id: int
+    description: Optional[str]
+    name: Optional[str]
+
+
+class Management(BaseModel):
+    id: int
+    name: str
+
+
+class Business(BaseModel):
+    rut: str
+    id: int
+    business_name: str
+    address: str
+
+
+class Construction(BaseModel):
+    id: int
+    name: str
+    address: str
+
+
+class AssistanceDetails(AssistanceCreate):
+    id: int
+    management: Parameter
+    topic: Parameter
+    area: Parameter
+    task: Parameter
+    business: Business
+    construction: Construction
+
+    class Config:
+        allow_population_by_field_name = True

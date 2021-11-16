@@ -2,7 +2,7 @@ import json
 import requests
 from datetime import datetime
 from typing import Optional
-from fastapi import status, APIRouter
+from fastapi import status, APIRouter, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import joinedload
@@ -14,10 +14,11 @@ from fastapi_pagination import PaginationParams
 from fastapi_pagination.ext.sqlalchemy import paginate
 from app.settings import SERVICES
 from app.database.main import get_database
+from ...helpers.fetch_data import fetch_parameter_data, fetch_service
 from ...middlewares.auth import JWTBearer
 from ..attachment.services import save_attachment
 from .model import Assistance
-from .schema import AssistanceCreate, AssistancePatchSchema
+from .schema import AssistanceCreate, AssistanceDetails, AssistancePatchSchema
 
 
 router = APIRouter(prefix="/assistance",
@@ -129,15 +130,39 @@ def get_attended_list(business_id: int = None,
     return paginate(query, params)
 
 
-@router.get("/{id}")
-def get_one(id: int, db: Session = Depends(get_database)):
+@router.get("/{id}", response_model=AssistanceDetails)
+def get_one(req: Request, id: int, db: Session = Depends(get_database)):
     """
     Optiene una asistencia
     ---
     - **id**: id de asistencia
     """
+    found_event = db.query(Assistance).filter(Assistance.id == id).first()
 
-    return db.query(Assistance).filter(Assistance.id == id).first()
+    if not found_event:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Esta asistencia no existe")
+    management = fetch_parameter_data(
+        req.token, "management", str(found_event.management_id))
+    task = fetch_parameter_data(
+        req.token, "task-type", str(found_event.task_id))
+    topic = fetch_parameter_data(
+        req.token, "task-type", str(found_event.topic_id))
+    area = fetch_parameter_data(
+        req.token, "areas", str(found_event.area_id))
+
+    business = fetch_service(
+        req.token, SERVICES["business"]+"/business/"+str(found_event.business_id))
+    construction = fetch_service(
+        req.token, SERVICES["business"]+"/constructions/"+str(found_event.construction_id))
+    return {**found_event.__dict__,
+            "management": management,
+            "task": task,
+            "topic": topic,
+            "area": area,
+            "business": business,
+            "construction": construction,
+            }
 
 
 @router.post("")
