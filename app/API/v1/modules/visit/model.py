@@ -64,6 +64,25 @@ class VisitReport(Base):
         "Visit", back_populates="reports", lazy="select")
     contacts = relationship(
         "ReportTarget", back_populates="visit_report", lazy="joined")
+    items = relationship(
+        "ReportItem", back_populates="visit_report", lazy="joined")
+
+
+class ReportItem(Base):
+    __tablename__ = "report_item"
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    value = Column(Integer, nullable=False)
+    report_id = Column(Integer, ForeignKey("visit_report.id"), nullable=False)
+    item_id = Column(Integer, ForeignKey(
+        "visit_report_item.id"), nullable=False)
+    created_by = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True),
+                        nullable=False, server_default=func.now())
+    update_at = Column(DateTime(timezone=True),
+                       server_default=func.now(), onupdate=func.now())
+    visit_report = relationship(
+        "VisitReport", back_populates="items", lazy="select")
+    item = relationship("VisitReportItem",  uselist=False, lazy="select")
 
 
 class ReportTarget(Base):

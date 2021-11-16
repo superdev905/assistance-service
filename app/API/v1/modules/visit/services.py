@@ -11,7 +11,7 @@ from ...services.file import create_visit_report
 from ..assistance.model import Assistance
 from ..assistance_construction.model import AssistanceConstruction
 from .schema import VisitReportSchema
-from .model import Visit, ReportTarget, VisitReport
+from .model import ReportItem, Visit, ReportTarget, VisitReport
 
 
 def format_business_details(details: dict) -> dict:
@@ -154,6 +154,20 @@ def create_report_contacts(db: Session, contacts: List, visit_report_id: int, us
         db.flush(db_contact)
 
 
+def create_report_items(db: Session, items: List, report_id: int, user_id: int):
+    for item in items:
+        obj_item = jsonable_encoder(item)
+        obj_item["report_id"] = report_id
+        obj_item["created_by"] = user_id
+        del obj_item["item_name"]
+
+        db_item = ReportItem(**obj_item)
+
+        db.add(db_item)
+        db.commit()
+        db.refresh(db_item)
+
+
 def generate_report_and_upload(db: Session, visit_id: int, body: VisitReportSchema):
     visit = db.query(Visit).filter(Visit.id == visit_id).first()
     total_formatted = ""
@@ -213,6 +227,8 @@ def generate_visit_report(db: Session, visit_id: int, body: VisitReportSchema, u
 
     if body.contacts:
         create_report_contacts(db, body.contacts, db_report.id, user_id)
+    if len(body.items) > 0:
+        create_report_items(db, body.items, db_report.id, user_id)
 
 
 def generate_to_attend_employees_excel(visit_id: int):
