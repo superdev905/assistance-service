@@ -147,7 +147,7 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
     task = fetch_parameter_data(
         req.token, "task-type", str(found_event.task_id))
     topic = fetch_parameter_data(
-        req.token, "task-type", str(found_event.topic_id))
+        req.token, "topics", str(found_event.topic_id))
     area = fetch_parameter_data(
         req.token, "areas", str(found_event.area_id))
 
