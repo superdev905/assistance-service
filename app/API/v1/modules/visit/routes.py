@@ -134,10 +134,10 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
                             detail="No existe una visita con este" + id)
 
     r = requests.get(SERVICES["parameters"]+"/shift/"+str(visit.shift_id))
-    bussiness = get_business_data(
-        "business", visit.business_id)if visit.business_id else None
-    construction = get_business_data(
-        "constructions", visit.construction_id) if visit.construction_id else None
+    bussiness = get_business_data(req.token,
+                                  "business", visit.business_id)if visit.business_id else None
+    construction = get_business_data(req.token,
+                                     "constructions", visit.construction_id) if visit.construction_id else None
     report = db.query(VisitReport).filter(
         and_(VisitReport.visit_id == id, VisitReport.is_active == True)).order_by(VisitReport.created_at.desc()).first()
 

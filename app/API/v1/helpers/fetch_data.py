@@ -48,8 +48,8 @@ def get_employee_data(request: Request, id: int):
     return fetch_service(request.token, SERVICES["employees"] + "/employees/"+str(id))
 
 
-def get_business_data(prefix: str, id: int):
-    return fetch_service('', SERVICES["business"] + "/"+prefix+"/"+str(id))
+def get_business_data(token: str, prefix: str, id: int):
+    return fetch_service(token, SERVICES["business"] + "/"+prefix+"/"+str(id))
 
 
 def delete_file_from_store(file_key: str):
