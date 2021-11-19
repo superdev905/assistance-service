@@ -31,11 +31,10 @@ def upload_report(filename, file):
     return response.json()
 
 
-def create_visit_report(data):
+def create_visit_report(token: str, data):
 
     buffer = BytesIO()
     date_string = data["date"]
-    print(data["user"])
     report_name = 'Reporte'+data["correlative"] + ".pdf"
     report = SimpleDocTemplate(buffer,
                                topMargin=2.54*cm,
@@ -92,6 +91,8 @@ def create_visit_report(data):
 
     files = {'file': (report_name,  buffer.getvalue(), "application/pdf")}
     response = requests.post(
-        SERVICES["parameters"]+"/file/upload", files=files)
+        SERVICES["parameters"]+"/file/upload", files=files, headers={
+            "Authorization": "Bearer %s" % token
+        })
     buffer.seek(0)
     return response.json()

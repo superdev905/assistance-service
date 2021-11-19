@@ -4,12 +4,11 @@ import xlsxwriter
 from fastapi import Request
 from typing import List
 from io import BytesIO
-from datetime import datetime, timedelta
+from datetime import datetime
 from sqlalchemy.orm.session import Session
 from ...helpers.fetch_data import fetch_parameter_data, fetch_users_service
 from ...services.file import create_visit_report
 from ..assistance.model import Assistance
-from ..assistance_construction.model import AssistanceConstruction
 from .schema import VisitReportSchema
 from .model import ReportItem, Visit, ReportTarget, VisitReport
 
@@ -169,7 +168,7 @@ def create_report_items(db: Session, items: List, report_id: int, user_id: int):
         db.refresh(db_item)
 
 
-def generate_report_and_upload(db: Session, visit_id: int, body: VisitReportSchema):
+def generate_report_and_upload(db: Session, visit_id: int, body: VisitReportSchema, token: str):
     visit = db.query(Visit).filter(Visit.id == visit_id).first()
     total_formatted = ""
     total_assistance = len(db.query(Assistance).filter(
@@ -202,20 +201,20 @@ def generate_report_and_upload(db: Session, visit_id: int, body: VisitReportSche
             "total": str(total_assistance),
             "table_data": table_data
             }
-    report_upload = create_visit_report(data)
+    report_upload = create_visit_report(token, data)
 
     return report_upload
 
 
-def generate_visit_report(db: Session, visit_id: int, body: VisitReportSchema, user_id: int) -> None:
+def generate_visit_report(db: Session, visit_id: int, body: VisitReportSchema, req: Request) -> None:
 
-    report = generate_report_and_upload(db, visit_id, body)
+    report = generate_report_and_upload(db, visit_id, body, req.token)
 
     obj_report = jsonable_encoder(body)
     del obj_report["contacts"]
     del obj_report["date"]
     del obj_report["items"]
-    obj_report["created_by"] = user_id
+    obj_report["created_by"] = req.user_id
     obj_report["is_active"] = True
     obj_report["visit_id"] = visit_id
     obj_report["report_key"] = report["file_key"]
@@ -227,9 +226,9 @@ def generate_visit_report(db: Session, visit_id: int, body: VisitReportSchema, u
     db.flush(db_report)
 
     if body.contacts:
-        create_report_contacts(db, body.contacts, db_report.id, user_id)
+        create_report_contacts(db, body.contacts, db_report.id, req.user_id)
     if len(body.items) > 0:
-        create_report_items(db, body.items, db_report.id, user_id)
+        create_report_items(db, body.items, db_report.id, req.user_id)
 
 
 def generate_to_attend_employees_excel(visit_id: int):

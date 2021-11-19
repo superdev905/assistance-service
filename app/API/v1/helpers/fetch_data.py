@@ -1,4 +1,4 @@
-from starlette.requests import Request
+from fastapi import Request
 import urllib3
 import json
 from fastapi.exceptions import HTTPException
@@ -52,9 +52,11 @@ def get_business_data(token: str, prefix: str, id: int):
     return fetch_service(token, SERVICES["business"] + "/"+prefix+"/"+str(id))
 
 
-def delete_file_from_store(file_key: str):
+def delete_file_from_store(token: str, file_key: str):
     user_req = http.request(
-        'DELETE', SERVICES["parameters"]+"/file/delete/"+file_key)
+        'DELETE', SERVICES["parameters"]+"/file/delete/"+file_key, headers={
+            "Authorization": "Bearer %s" % token
+        })
     result = handle_response(user_req)
 
     return result

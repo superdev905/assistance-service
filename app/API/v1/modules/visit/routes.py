@@ -229,7 +229,7 @@ def create_report(req: Request, id: int, report_in: VisitReportSchema, db: Sessi
         raise HTTPException(
             status_code=400, detail="Esta visita no existe")
 
-    generate_visit_report(db, id, report_in, req.user_id)
+    generate_visit_report(db, id, report_in, req)
 
     return {"message": "Reporte creado"}
 
@@ -264,7 +264,7 @@ def update_report(req: Request, id: int, report_in: VisitReportSchema, db: Sessi
             db.commit()
             db.flush(report)
 
-    generate_visit_report(db, id, report_in, req.user_id)
+    generate_visit_report(db, id, report_in, req)
 
     return {"message": "Reporte actualizado"}
 
