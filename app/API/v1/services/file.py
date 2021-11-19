@@ -27,7 +27,6 @@ def upload_report(filename, file):
     files = {'file': (filename, file, 'application/pdf')}
     response = requests.post(
         SERVICES["parameters"]+"/file/upload", files=files)
-    print(response.json())
     return response.json()
 
 

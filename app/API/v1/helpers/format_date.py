@@ -26,7 +26,6 @@ dayNames = ["Lunes",
 def format_date_to_string(date: datetime):
 
     now = date
-    print(now)
     month = months[now.month-1]
     dayName = dayNames[now.weekday()]
 

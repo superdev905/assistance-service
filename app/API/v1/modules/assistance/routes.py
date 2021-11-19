@@ -78,24 +78,22 @@ def get_all(visit_id: Optional[int] = None,
 
 
 @router.get("/search")
-def get_one(visit_id: int, employee_rut: str = None, db: Session = Depends(get_database)):
+def get_one(req: Request, visit_id: int, employee_rut: str = None, db: Session = Depends(get_database)):
     formatted_search = '{}%'.format(employee_rut)
     employees = db.query(Assistance.employee_id.label("employee_id")).filter(and_(
         Assistance.visit_id == visit_id, Assistance.employee_rut.ilike(formatted_search))).group_by(Assistance.employee_id).all()
 
     result = []
-    params = {"search": employee_rut, "state": "CREATED"}
-    r = requests.get(SERVICES["employees"]+"/employees",
-                     params=params)
+    r = fetch_service(req.token,
+                      SERVICES["employees"]+"/employees?search=" + employee_rut + "&state=CREATED")
     if len(employees) == 0:
-        for item in r.json():
+        for item in r:
             result.append({**item, "tag": "N", "is_old": False})
 
     else:
         for item in r.json():
             temp_item = {**item}
             for emp in employees:
-                print(item["id"] == int(emp.employee_id))
                 if item["id"] == int(emp.employee_id):
                     temp_item["tag"] = "A"
                     temp_item["is_old"] = True

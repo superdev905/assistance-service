@@ -42,7 +42,6 @@ def get_blocked_status(visit: Visit) -> bool:
     end_date = datetime.strftime(
         visit.end_date.replace(hour=23, minute=59, second=59, microsecond=999), '%Y-%m-%d')
 
-    print(current_date >= end_date)
     return current_date >= end_date
 
 
