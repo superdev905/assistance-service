@@ -32,8 +32,8 @@ class Assistance(Base):
     company_report_observation = Column(String(400))
     observation = Column(String(255), nullable=False)
     assigned_id = Column(Integer, nullable=False)
-    case_id = Column(Integer, nullable=False)
-    task_id = Column(Integer, nullable=False)
+    case_id = Column(Integer)
+    task_id = Column(Integer)
     visit_id = Column(Integer, ForeignKey("visit.id", ondelete="CASCADE"))
     created_by = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True),

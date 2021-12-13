@@ -14,7 +14,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from app.database.main import get_database
 from app.settings import SERVICES
 from ...middlewares.auth import JWTBearer
-from ...helpers.fetch_data import fetch_users_service, get_business_data
+from ...helpers.fetch_data import fetch_users_service, get_business_data, fetch_parameter_data
 from ..assistance.model import Assistance
 from .model import Visit, VisitReport, VisitRevision
 from .schema import VisitCalendarItem, VisitCloseSchema, VisitCreate, VisitPatchSchema, VisitReportSchema, VisitWorkers, VisitsExport
@@ -133,7 +133,7 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="No existe una visita con este" + id)
 
-    r = requests.get(SERVICES["parameters"]+"/shift/"+str(visit.shift_id))
+    shift = fetch_parameter_data(req.token, "shift",  visit.shift_id)
     bussiness = get_business_data(req.token,
                                   "business", visit.business_id)if visit.business_id else None
     construction = get_business_data(req.token,
@@ -150,7 +150,7 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
         "maternal_surname": assigned_user["maternal_surname"]}
 
     return {**visit.__dict__,
-            "shift": r.json(),
+            "shift": shift,
             "bussiness": format_business_details(bussiness),
             "construction": format_construction_details(construction),
             "report": report,

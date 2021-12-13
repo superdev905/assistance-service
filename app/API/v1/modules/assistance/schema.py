@@ -27,8 +27,8 @@ class AssistanceCreate(BaseModel):
     company_report: str
     company_report_observation: Optional[str]
     assigned_id: int
-    case_id: int
-    task_id: int
+    case_id: Optional[int]
+    task_id: Optional[int]
     visit_id: Optional[int]
     observation: str
     attachments: List[Optional[AttachmentCreate]]

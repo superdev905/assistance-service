@@ -78,7 +78,10 @@ def get_all(visit_id: Optional[int] = None,
 
 
 @router.get("/search")
-def get_one(req: Request, visit_id: int, employee_rut: str = None, db: Session = Depends(get_database)):
+def get_one(req: Request,
+            visit_id: int,
+            employee_rut: str = None,
+            db: Session = Depends(get_database)):
     formatted_search = '{}%'.format(employee_rut)
     employees = db.query(Assistance.employee_id.label("employee_id")).filter(and_(
         Assistance.visit_id == visit_id, Assistance.employee_rut.ilike(formatted_search))).group_by(Assistance.employee_id).all()
@@ -91,7 +94,7 @@ def get_one(req: Request, visit_id: int, employee_rut: str = None, db: Session =
             result.append({**item, "tag": "N", "is_old": False})
 
     else:
-        for item in r.json():
+        for item in r:
             temp_item = {**item}
             for emp in employees:
                 if item["id"] == int(emp.employee_id):
@@ -105,13 +108,17 @@ def get_one(req: Request, visit_id: int, employee_rut: str = None, db: Session =
 
 
 @router.get("/attended")
-def get_attended_list(visit_id: int = None, id_employee: int = None, db: Session = Depends(get_database)):
+def get_attended_list(visit_id: int = None,
+                      id_employee: int = None,
+                      social_case_id: int = None,
+                      db: Session = Depends(get_database)):
     filters = []
     if visit_id:
         filters.append(Assistance.visit_id == visit_id)
     if id_employee:
         filters.append(Assistance.employee_id == id_employee)
-
+    if social_case_id:
+        filters.append(Assistance.case_id == social_case_id)
     list = db.query(Assistance).filter(
         and_(*filters)).order_by(Assistance.created_at.desc()).all()
     return list
@@ -131,7 +138,7 @@ def get_attended_list(business_id: int = None,
 @router.get("/{id}", response_model=AssistanceDetails)
 def get_one(req: Request, id: int, db: Session = Depends(get_database)):
     """
-    Optiene una asistencia
+    Optiene los detalles de una asistencia
     ---
     - **id**: id de asistencia
     """
@@ -156,6 +163,7 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
         req.token, SERVICES["business"]+"/business/"+str(found_event.business_id))
     construction = fetch_service(
         req.token, SERVICES["business"]+"/constructions/"+str(found_event.construction_id))
+
     return {**found_event.__dict__,
             "management": management,
             "task": task,
@@ -186,7 +194,9 @@ def create_one(obj_in: AssistanceCreate, db: Session = Depends(get_database)):
 
 
 @ router.put("/{id}")
-def update_one(id: int, update_body: AssistanceCreate, db: Session = Depends(get_database)):
+def update_one(id: int,
+               update_body: AssistanceCreate,
+               db: Session = Depends(get_database)):
     """
     Actualiza un asistencia
     - **id**: id de la asistencia
@@ -215,7 +225,9 @@ def update_one(id: int, update_body: AssistanceCreate, db: Session = Depends(get
 
 
 @ router.patch("/{id}")
-def patch_one(id: int, patch_body: AssistancePatchSchema, db: Session = Depends(get_database)):
+def patch_one(id: int,
+              patch_body: AssistancePatchSchema,
+              db: Session = Depends(get_database)):
     """
     Actualiza campos de una asistencia
     - **id**: id de la asistencia
