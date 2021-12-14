@@ -113,9 +113,8 @@ class AssistanceDetails(AssistanceCreate):
     management: Parameter
     topic: Parameter
     area: Parameter
-    task: Parameter
-    business: Business
-    construction: Construction
+    business: Optional[Business]
+    construction: Optional[Construction]
 
     class Config:
         allow_population_by_field_name = True

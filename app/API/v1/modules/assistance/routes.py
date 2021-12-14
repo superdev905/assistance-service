@@ -147,23 +147,22 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
     management = fetch_parameter_data(req.token,
                                       "management",
                                       str(found_event.management_id))
-    task = fetch_parameter_data(req.token,
-                                "task-type",
-                                str(found_event.task_id))
+
+    business = fetch_service(
+        req.token, SERVICES["business"]+"/business/"+str(found_event.business_id)) if found_event.business_id else None
+
+    construction = fetch_service(
+        req.token, SERVICES["business"]+"/constructions/"+str(found_event.construction_id)) if found_event.construction_id else None
+
     topic = fetch_parameter_data(req.token,
                                  "topics",
                                  str(found_event.topic_id))
     area = fetch_parameter_data(req.token,
                                 "areas",
-                                str(found_event.area_id))
-    business = fetch_service(
-        req.token, SERVICES["business"]+"/business/"+str(found_event.business_id))
-    construction = fetch_service(
-        req.token, SERVICES["business"]+"/constructions/"+str(found_event.construction_id))
+                                found_event.area_id)
 
     return {**found_event.__dict__,
             "management": management,
-            "task": task,
             "topic": topic,
             "area": area,
             "business": business,

@@ -7,10 +7,9 @@ from app.settings import SERVICES
 http = urllib3.PoolManager()
 
 
-def handle_response(result) -> object:
+def handle_response(result, endpoint=None) -> object:
     if(result.status == 200):
         return json.loads(result.data)
-
     raise HTTPException(status_code=400, detail="Error al obtener datos")
 
 
@@ -20,7 +19,7 @@ def fetch_parameter_data(token, endpoint: str, id: int) -> object:
             "Authorization": "Bearer %s" % token
         })
 
-    return handle_response(response)
+    return handle_response(response, endpoint)
 
 
 def fetch_users_service(token: str, user_id: int) -> str:
@@ -28,6 +27,7 @@ def fetch_users_service(token: str, user_id: int) -> str:
         'GET', SERVICES["users"]+'/users/' + str(user_id), headers={
             "Authorization": "Bearer %s" % token
         })
+
     result = handle_response(user_req)
 
     return {**result,
