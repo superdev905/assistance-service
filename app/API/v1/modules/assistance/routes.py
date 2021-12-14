@@ -2,7 +2,8 @@ import json
 import requests
 from datetime import datetime
 from typing import Optional
-from fastapi import status, APIRouter, Request
+
+from fastapi import status, APIRouter, Request, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import joinedload
@@ -110,7 +111,7 @@ def get_one(req: Request,
 @router.get("/attended")
 def get_attended_list(visit_id: int = None,
                       id_employee: int = None,
-                      social_case_id: int = None,
+                      social_case_id: int = Query(None, alias="socialCaseId"),
                       db: Session = Depends(get_database)):
     filters = []
     if visit_id:
