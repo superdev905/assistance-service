@@ -1,8 +1,4 @@
-import json
-import requests
-from datetime import datetime
 from typing import Optional
-
 from fastapi import status, APIRouter, Request, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
@@ -191,7 +187,8 @@ def create_one(obj_in: AssistanceCreate, db: Session = Depends(get_database)):
     for attach in obj_in.attachments:
         save_attachment(db, attach, obj_in.created_by, saved_assistance.id)
 
-    return saved_assistance
+    return {**saved_assistance.__dict__,
+            "id": saved_assistance.id}
 
 
 @ router.put("/{id}")
