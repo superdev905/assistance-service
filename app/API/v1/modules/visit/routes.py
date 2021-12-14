@@ -53,7 +53,6 @@ def get_calendar_events(req: Request, start_date: Optional[datetime] = None,
              "assigned": fetch_users_service(req.token, visit.assigned_id)
              })
         close_visit(db, visit)
-
     return items
 
 

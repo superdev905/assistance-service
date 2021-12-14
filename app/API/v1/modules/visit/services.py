@@ -6,7 +6,8 @@ from typing import List
 from io import BytesIO
 from datetime import datetime
 from sqlalchemy.orm.session import Session
-from ...helpers.fetch_data import fetch_parameter_data, fetch_users_service
+from app.settings import SERVICES
+from ...helpers.fetch_data import fetch_parameter_data, fetch_users_service, fetch_service
 from ...services.file import create_visit_report
 from ..assistance.model import Assistance
 from .schema import VisitReportSchema
