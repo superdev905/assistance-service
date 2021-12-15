@@ -10,7 +10,7 @@ class Attachment (Base):
     __tablename__ = "attachment"
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     file_name = Column(String(1024), nullable=False)
-    file_key = Column(String(40), nullable=False)
+    file_key = Column(String(500), nullable=False)
     file_url = Column(String(500), nullable=False)
     file_size = Column(String(20), nullable=False)
     source_system = Column(String(50))
