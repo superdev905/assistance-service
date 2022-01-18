@@ -24,8 +24,23 @@ router = APIRouter(
     prefix="/visits", tags=["Visitas"], dependencies=[Depends(JWTBearer())])
 
 
+@router.get("/stats")
+def get_calendar_stats(start_date: Optional[datetime] = None,
+                       end_date: Optional[datetime] = None,
+                       db: Session = Depends(get_database)):
+    filters = []
+    if start_date and end_date:
+        filters.append(Visit.start_date >= start_date)
+        filters.append(Visit.end_date <= end_date)
+
+    events = db.query(Visit).filter(*filters).all()
+
+    return {"label": "Visitas", "total": len(events)}
+
+
 @router.get("/calendar", response_model=List[VisitCalendarItem])
-def get_calendar_events(req: Request, start_date: Optional[datetime] = None,
+def get_calendar_events(req: Request,
+                        start_date: Optional[datetime] = None,
                         end_date: Optional[datetime] = None,
                         status: Optional[str] = None,
                         db: Session = Depends(get_database)):
