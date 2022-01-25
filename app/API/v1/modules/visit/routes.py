@@ -1,7 +1,7 @@
 import requests
 from datetime import datetime
 from typing import List, Optional
-from fastapi import status, APIRouter, Request
+from fastapi import status, APIRouter, Request, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
@@ -18,28 +18,44 @@ from ...helpers.fetch_data import fetch_users_service, get_business_data, fetch_
 from ..assistance.model import Assistance
 from .model import Visit, VisitReport, VisitRevision
 from .schema import VisitCalendarItem, VisitCloseSchema, VisitCreate, VisitPatchSchema, VisitReportSchema, VisitWorkers, VisitsExport
-from .services import close_visit, format_business_details, format_construction_details, generate_to_attend_employees_excel, generate_visit_report, get_blocked_status, generate_visits_excel
+from .services import close_visit, format_business_details, format_construction_details, generate_to_attend_employees_excel, generate_visit_report, get_blocked_status, generate_visits_excel, get_owner_status
 
 router = APIRouter(
     prefix="/visits", tags=["Visitas"], dependencies=[Depends(JWTBearer())])
 
 
-@router.get("/stats")
-def get_calendar_stats(start_date: Optional[datetime] = None,
-                       end_date: Optional[datetime] = None,
+@router.get("/calendar/stats")
+def get_calendar_stats(users: List[int] = Query(None),
+                       start_date: Optional[datetime] = Query(
+                           None, alias="startDate"),
+                       end_date: Optional[datetime] = Query(
+                           None, alias="endDate"),
                        db: Session = Depends(get_database)):
     filters = []
     if start_date and end_date:
         filters.append(Visit.start_date >= start_date)
         filters.append(Visit.end_date <= end_date)
+    if users:
+        filters.append(Visit.assigned_id.in_(users))
 
-    events = db.query(Visit).filter(*filters).all()
+    result = []
+    docs = db.query(func.count(Visit.id).label("value"),
+                    Visit.status.label("status")).filter(*filters).group_by(Visit.status).all()
 
-    return {"label": "Visitas", "total": len(events)}
+    total = db.query(func.count(Visit.id)).filter(and_(*filters)).all()
+
+    result.append({"label": "Total", "value": total})
+
+    for doc in docs:
+        result.append({"label": doc.status, "value": doc.value})
+
+    return result
 
 
 @router.get("/calendar", response_model=List[VisitCalendarItem])
 def get_calendar_events(req: Request,
+                        users: List[int] = Query(None),
+
                         start_date: Optional[datetime] = None,
                         end_date: Optional[datetime] = None,
                         status: Optional[str] = None,
@@ -51,6 +67,10 @@ def get_calendar_events(req: Request,
     - **end_date**: Fecha de fin
     - **user_id**: Id de usuario responsable
     """
+    user_id = req.user_id
+    current_user = fetch_users_service(req.token, req.user_id)
+    user_role = current_user["role"]["key"]
+
     filters = []
 
     if start_date and end_date:
@@ -58,13 +78,17 @@ def get_calendar_events(req: Request,
         filters.append(Visit.end_date <= end_date)
     if status:
         filters.append(Visit.status == status)
+    if users:
+        filters.append(Visit.assigned_id.in_(users))
+    if user_role == "SOCIAL_ASSISTANCE":
+        filters.append(Visit.assigned_id == user_id)
     items = []
     events = db.query(Visit).filter(*filters).order_by(Visit.date).all()
 
     for visit in events:
         items.append(
             {**visit.__dict__,
-             "is_owner": visit.assigned_id == req.user_id,
+             "is_owner": get_owner_status(user_role, visit.assigned_id, req.user_id),
              "assigned": fetch_users_service(req.token, visit.assigned_id)
              })
         close_visit(db, visit)
@@ -72,7 +96,8 @@ def get_calendar_events(req: Request,
 
 
 @router.get("")
-def get_all(user_id: Optional[int] = None,
+def get_all(req: Request,
+            user_id: Optional[int] = None,
             start_date: Optional[datetime] = None,
             search: Optional[str] = None,
             db: Session = Depends(get_database),
@@ -89,7 +114,9 @@ def get_all(user_id: Optional[int] = None,
     """
     filters = []
     search_filters = []
-    if user_id:
+    current_user = fetch_users_service(req.token, req.user_id)
+    user_role = current_user["role"]["key"]
+    if user_id and user_role == "SOCIAL_ASSISTANCE":
         filters.append(Visit.assigned_id == user_id)
     if start_date:
         filters.append(func.DATE(Visit.start_date) >= start_date)

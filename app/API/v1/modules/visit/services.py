@@ -275,3 +275,9 @@ def generate_to_attend_employees_excel(visit_id: int):
     output.seek(0)
 
     return output
+
+
+def get_owner_status(role: str, assigned_id: int, user_id: int):
+    if role != "SOCIAL_ASSISTANCE":
+        return True
+    return assigned_id == user_id
