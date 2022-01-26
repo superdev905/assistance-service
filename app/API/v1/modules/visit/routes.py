@@ -491,6 +491,7 @@ def close_one_visit(req: Request, id: int, body: VisitCloseSchema,  db: Session 
     db.commit()
     db.refresh(saved_revision)
 
+    visit.status = "CERRADA"
     visit.is_close = True
     visit.is_close_pending = False
     visit.close_revision_id = saved_revision.id

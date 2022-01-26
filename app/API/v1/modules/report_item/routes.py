@@ -9,7 +9,7 @@ from ...middlewares.auth import JWTBearer
 from ...helpers.crud import get_updated_obj
 from .model import VisitReportItem
 from .schema import ReportCategoryCreate, ReportCategoryItem
-from .services import seed_items
+from .services import seed_report_items
 
 router = APIRouter(
     prefix="/visits-report-items",
@@ -107,6 +107,6 @@ def seed_items(request: Request, db: Session = Depends(get_database)):
     Registra items
     ---
     """
-    seed_items(db, request.user_id)
+    seed_report_items(db, request.user_id)
 
     return {"message": "Datos creados"}

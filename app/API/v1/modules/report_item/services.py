@@ -3,7 +3,7 @@ from sqlalchemy.orm.session import Session
 from .model import VisitReportItem
 
 
-def seed_items(db: Session, user_id: int) -> None:
+def seed_report_items(db: Session, user_id: int) -> None:
     items = [
         {
             "name": "Charlas",

@@ -174,7 +174,7 @@ def generate_report_and_upload(db: Session, visit_id: int, body: VisitReportSche
         Assistance.visit_id == visit_id).all())
     if(total_assistance > 0):
         total_formatted = str(total_assistance) + \
-            " personas" if total_assistance > 1 else "persona"
+            " personas" if total_assistance > 1 else "1 persona"
     else:
         total_formatted = "No se atienderon personas"
 
