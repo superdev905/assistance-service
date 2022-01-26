@@ -3,7 +3,7 @@ from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import DateTime
 from app.database.base_class import Base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String
 
 
 class Assistance(Base):
@@ -13,6 +13,9 @@ class Assistance(Base):
     employee_id = Column(Integer, nullable=False)
     employee_name = Column(String(100), nullable=False)
     employee_lastname = Column(String(100), nullable=False)
+    attended_id = Column(Integer, nullable=False)
+    attended_name = Column(String(200), nullable=False)
+    is_attended_relative = Column(Boolean, nullable=False, server_default="0")
     date = Column(DateTime, nullable=False)
     source_system = Column(String(100), nullable=False)
     source_business = Column(String(100), nullable=False)

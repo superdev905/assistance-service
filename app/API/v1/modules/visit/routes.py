@@ -172,7 +172,7 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
 
     if not visit:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="No existe una visita con este" + id)
+                            detail="No existe una visita con este" + str(id))
 
     shift = fetch_parameter_data(req.token, "shift",  visit.shift_id)
     bussiness = get_business_data(req.token,

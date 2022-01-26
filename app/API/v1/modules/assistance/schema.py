@@ -33,6 +33,9 @@ class AssistanceCreate(BaseModel):
     observation: str
     attachments: List[Optional[AttachmentCreate]]
     created_by: int
+    attended_id: int
+    attended_name: str
+    is_attended_relative: bool
 
     class Config:
         orm_mode = True
