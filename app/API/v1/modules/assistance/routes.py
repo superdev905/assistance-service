@@ -107,6 +107,7 @@ def get_one(req: Request,
 @router.get("/attended")
 def get_attended_list(visit_id: int = None,
                       id_employee: int = None,
+                      status: str = None,
                       social_case_id: int = Query(None, alias="socialCaseId"),
                       db: Session = Depends(get_database)):
     filters = []
@@ -114,6 +115,8 @@ def get_attended_list(visit_id: int = None,
         filters.append(Assistance.visit_id == visit_id)
     if id_employee:
         filters.append(Assistance.employee_id == id_employee)
+    if status:
+        filters.append(Assistance.status.like(status))
     if social_case_id:
         filters.append(Assistance.case_id == social_case_id)
     list = db.query(Assistance).filter(
