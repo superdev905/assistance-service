@@ -14,6 +14,10 @@ class ReportCategoryBase(BaseModel):
             }
         }
 
+class ReportVisitDateRange(BaseModel):
+    startDate: Optional[str]
+    endDate: Optional[str]
+
 
 class ReportCategoryCreate(ReportCategoryBase):
     pass

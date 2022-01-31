@@ -7,7 +7,7 @@ from io import BytesIO
 from datetime import datetime
 from sqlalchemy.orm.session import Session
 from app.settings import SERVICES
-from ...helpers.fetch_data import fetch_parameter_data, fetch_users_service, fetch_service
+from ...helpers.fetch_data import fetch_parameter_data, fetch_users_service, get_business_data
 from ...services.file import create_visit_report
 from ..assistance.model import Assistance
 
@@ -19,15 +19,19 @@ def generate_visits_excel(req: Request,
 
     dataList = []
     for item in list:
-        user = "EXAMPLE"
+        user = fetch_users_service(req.token, str(item["assigned_id"]))
         shift_details = fetch_parameter_data(
             req.token, "shift", item["shift_id"])
-        dataList.append({**item, "assigned": user,
+        businnes_details = get_business_data(req.token, "business", item["business_id"])
+        construction_details = get_business_data(req.token, "constructions", businnes_details["id"])
+        dataList.append({**item, "assigned": (f"{user['names']} {user['paternal_surname']} {user['maternal_surname']}"),
                         "date": item["date"].strftime('%d-%m-%Y'),
                          "end_date": item["end_date"].strftime('%H:%M:%S'),
                          "start_date": item["start_date"].strftime('%H:%M:%S'),
                          "shift_name": shift_details["name"].capitalize(),
-                         "status": item["status"].capitalize()})
+                         "status": item["status"].capitalize(),
+                         "business_name": businnes_details["name"],
+                         "construction_name": construction_details["name"]})
 
     headings = [{"name": "Fecha", "width": 10},
                 {"name": "Hora de inicio", "width": 20},
@@ -40,8 +44,16 @@ def generate_visits_excel(req: Request,
                 {"name": "Obra", "width": 40},
                 {"name": "Observaciones", "width": 100}]
 
-    attrs = ["date", "start_date", "end_date", "shift_name", "status", "title",
-             "business_name", "construction_name", "assigned"]
+    attrs = ["date", 
+            "start_date", 
+            "end_date", 
+            "status",
+            "shift_name",
+            "title", 
+            "assigned",
+            "business_name", 
+            "construction_name",
+            "observation"]
 
     output = BytesIO()
 
@@ -69,8 +81,21 @@ def generate_visits_excel(req: Request,
     })
     header = workbook.add_format({**header_style})
 
-    worksheet.write(1, 0, "Visitas del " +
+    if(start_date == None and end_date == None):
+        worksheet.write(1, 0, "Todos los Registros de Visitas a la Fecha")
+
+    elif(start_date and end_date):
+        worksheet.write(1, 0, "Visitas del " +
                     start_date.strftime('%d-%m-%Y') + " al " + end_date.strftime('%d-%m-%Y'))
+        
+    elif (end_date == None):
+        worksheet.write(1, 0, "Visitas del " +
+                    start_date.strftime('%d-%m-%Y') + " a la Fecha")
+        
+    elif (start_date == None):
+        worksheet.write(1, 0, "Visitas desde el inicio hasta " + end_date.strftime('%d-%m-%Y'))
+
+    
 
     heading_index = 0
     for head in headings:
