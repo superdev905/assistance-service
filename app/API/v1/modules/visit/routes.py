@@ -16,6 +16,8 @@ from app.settings import SERVICES
 from ...middlewares.auth import JWTBearer
 from ...helpers.fetch_data import fetch_users_service, get_business_data, fetch_parameter_data
 from ..assistance.model import Assistance
+from ..assistance_construction.model import AssistanceConstruction
+from ..report_item.model import VisitReportItem
 from .model import Visit, VisitReport, VisitRevision
 from .schema import VisitCalendarItem, VisitCloseSchema, VisitCreate, VisitPatchSchema, VisitReportSchema, VisitWorkers, VisitsExport
 from .services import close_visit, format_business_details, format_construction_details, generate_to_attend_employees_excel, generate_visit_report, get_blocked_status, generate_visits_excel, get_owner_status
@@ -196,6 +198,29 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
             "construction": format_construction_details(construction),
             "report": report,
             "assigned": assigned_user}
+
+
+@router.get("/{id}/report-items")
+def get_one_statistics(id: int, db: Session = Depends(get_database)):
+    """
+    Obtiene los items para reporte de visita 
+    - **id**: visit_id de la asistencia
+
+    """
+    result = []
+    items = db.query(VisitReportItem).filter(
+        VisitReportItem.is_active == True).all()
+    for i in items:
+        total = 0
+        docs = db.query(AssistanceConstruction).filter(and_(
+            AssistanceConstruction.type_name.ilike("%{}%".format(i.name)), AssistanceConstruction.visit_id == id)).all()
+
+        for doc in docs:
+            total += doc.quantity
+
+        result.append({**i.__dict__, "value": total})
+
+    return result
 
 
 @router.get("/{id}/statistics")
