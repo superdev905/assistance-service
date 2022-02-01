@@ -14,7 +14,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from app.database.main import get_database
 from app.settings import SERVICES
 from ...middlewares.auth import JWTBearer
-from ...helpers.fetch_data import fetch_users_service, get_business_data, fetch_parameter_data
+from ...helpers.fetch_data import fetch_users_service, get_business_data, fetch_parameter_data, get_employee_data
 from ..assistance.model import Assistance
 from ..assistance_construction.model import AssistanceConstruction
 from ..report_item.model import VisitReportItem
@@ -224,17 +224,32 @@ def get_one_statistics(id: int, db: Session = Depends(get_database)):
 
 
 @router.get("/{id}/statistics")
-def get_one_statistics(id: int, db: Session = Depends(get_database)):
+def get_one_statistics(req: Request,
+                       id: int,
+                       db: Session = Depends(get_database)):
     """
-    Obtiene las estadisticas de las 
+    Obtiene las estadisticas de una visita
 
     - **id**: visit_id de la asistencia
 
     """
 
     total = len(db.query(Assistance).filter(Assistance.visit_id == id).all())
+    total_house = 0
+    total_sub_contract = 0
+    docs = db.query(Assistance).filter(Assistance.visit_id == id).all()
 
-    return {"total": total, "new": 0, "old": total}
+    for i in docs:
+        employee = get_employee_data(req, i.employee_id)
+        if employee["current_job"]:
+            if employee["current_job"]["contract_type"] == "SUB CONTRATO":
+                total_sub_contract += 1
+            else:
+                total_house += 1
+        else:
+            total_house += 1
+
+    return {"total": total, "new": 0, "old": total, "house": total_house, "subcontract": total_sub_contract}
 
 
 @router.post("/{id}/workers")

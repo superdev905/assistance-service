@@ -85,7 +85,7 @@ def get_one(req: Request,
 
     result = []
     r = fetch_service(req.token,
-                      SERVICES["employees"]+"/employees?search=" + employee_rut + "&state=CREATED")
+                      SERVICES["employees"]+"/employees?search=" + employee_rut + "&state=CREATED&page=1&size=50")
     if len(employees) == 0:
         for item in r:
             result.append({**item, "tag": "N", "is_old": False})
