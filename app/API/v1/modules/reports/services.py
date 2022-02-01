@@ -7,7 +7,7 @@ from io import BytesIO
 from datetime import datetime
 from sqlalchemy.orm.session import Session
 from app.settings import SERVICES
-from ...helpers.fetch_data import fetch_parameter_data, fetch_users_service, get_business_data
+from ...helpers.fetch_data import fetch_parameter_data, fetch_users_service, get_business_data, get_managment_data
 from ...services.file import create_visit_report
 from ..assistance.model import Assistance
 
@@ -94,6 +94,255 @@ def generate_visits_excel(req: Request,
         
     elif (start_date == None):
         worksheet.write(1, 0, "Visitas desde el inicio hasta " + end_date.strftime('%d-%m-%Y'))
+
+    
+
+    heading_index = 0
+    for head in headings:
+        worksheet.set_column(3, heading_index, head["width"])
+        worksheet.write(
+            3, heading_index, head["name"], center_header)
+        heading_index += 1
+
+    row = 4
+
+    for item in dataList:
+        col = 0
+        for attr in attrs:
+            worksheet.write(
+                row, col, item[attr], cell)
+            col += 1
+
+        row += 1
+
+    worksheet.hide_gridlines(2)
+
+    workbook.close()
+    output.seek(0)
+
+    return output
+
+
+def generate_assistance_by_employee_excel(req: Request, list: List[dict]):
+    dataList = []
+    for item in list:
+
+        managment = get_managment_data(req.token, str(item["management_id"]))
+
+        dataList.append({
+            "id": item["id"],
+            "status": item["status"],
+            "managment_type": managment["name"],
+            "contact_method": item["contact_method"],
+            "date": item["date"].strftime('%d-%m-%Y'),
+            "update_at": item["update_at"].strftime('%d-%m-%Y'),
+            "employee_rut": item["employee_rut"],
+            "employee_name": item["employee_name"],
+            "business_name": item["business_name"],
+            "construction_name": item["construction_name"],
+            "source_business": item["source_business"],
+            "attention_place": item["attention_place"],
+            "assigned_id": item["assigned_id"],
+            "area_name": item["area_name"],
+            "attended_name": item["attended_name"],
+            "source_system": item["source_system"],
+            "observation": item["observation"],
+            "company_report_observation": item["company_report_observation"],
+            "case_id": item["case_id"]
+        })
+
+    headings = [{"name": "Id", "width": 10},
+                {"name": "Estado", "width": 20},
+                {"name": "Tipo de Gestion", "width": 20},
+                {"name": "Tipo de intervención", "width": 25},
+                {"name": "Fecha de derivación", "width": 25},
+                {"name": "Ultima Actualización", "width": 27},
+                {"name": "R.U.T", "width": 50},
+                {"name": "Nombre Trabajador", "width": 27},
+                {"name": "Empresa", "width": 40},
+                {"name": "Obra", "width": 40},
+                {"name": "Fuente de Empresa", "width": 40},
+                {"name": "Oficina", "width": 40},
+                {"name": "Profesional", "width": 40},
+                {"name": "Area", "width": 40},
+                {"name": "Trabajador Atendido", "width": 40},
+                {"name": "Fuente del Sistema", "width": 40},
+                {"name": "Observaciones", "width": 100},
+                {"name": "Observaciones Empresa", "width": 100},
+                {"name": "Caso Id", "width": 10}]
+
+    attrs = ["id", 
+            "status",
+            "managment_type",
+            "contact_method", 
+            "date",
+            "update_at",
+            "employee_rut", 
+            "employee_name",
+            "business_name", 
+            "construction_name",
+            "source_business",
+            "attention_place",
+            "assigned_id",
+            "area_name",
+            "attended_name",
+            "source_system",
+            "observation",
+            "company_report_observation",
+            "case_id"]
+
+    output = BytesIO()
+
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+
+    cell_format = workbook.add_format()
+    cell_format.set_text_wrap()
+
+    header_style = {
+        'bg_color': '#AED5FF',
+        'color': 'black',
+        'align': 'center',
+        'valign': 'top',
+        'border': 1,
+        'text_wrap': True
+    }
+
+    center_header = workbook.add_format({**header_style, "align": "center"})
+    cell = workbook.add_format({
+        'color': 'black',
+        'valign': 'top',
+        'border': 1,
+        'text_wrap': True
+    })
+    header = workbook.add_format({**header_style})
+
+    rut_employee = list[0]["employee_rut"]
+    worksheet.write(1, 0, f"Visitas del Trabajador con el Rut: {rut_employee}")
+
+    
+
+    heading_index = 0
+    for head in headings:
+        worksheet.set_column(3, heading_index, head["width"])
+        worksheet.write(
+            3, heading_index, head["name"], center_header)
+        heading_index += 1
+
+    row = 4
+
+    for item in dataList:
+        col = 0
+        for attr in attrs:
+            worksheet.write(
+                row, col, item[attr], cell)
+            col += 1
+
+        row += 1
+
+    worksheet.hide_gridlines(2)
+
+    workbook.close()
+    output.seek(0)
+
+    return output
+
+
+def generate_assistance_by_company_excel(req: Request, list: List[dict]):
+    dataList = []
+    for item in list:
+
+        managment = get_managment_data(req.token, str(item["management_id"]))
+
+        dataList.append({
+            "id": item["id"],
+            "status": item["status"],
+            "managment_type": managment["name"],
+            "contact_method": item["contact_method"],
+            "date": item["date"].strftime('%d-%m-%Y'),
+            "update_at": item["update_at"].strftime('%d-%m-%Y'),
+            "employee_rut": item["employee_rut"],
+            "employee_name": item["employee_name"],
+            "business_name": item["business_name"],
+            "construction_name": item["construction_name"],
+            "source_business": item["source_business"],
+            "attention_place": item["attention_place"],
+            "assigned_id": item["assigned_id"],
+            "area_name": item["area_name"],
+            "attended_name": item["attended_name"],
+            "source_system": item["source_system"],
+            "observation": item["observation"],
+            "company_report_observation": item["company_report_observation"],
+            "case_id": item["case_id"]
+        })
+
+    headings = [{"name": "Id", "width": 10},
+                {"name": "Estado", "width": 20},
+                {"name": "Tipo de Gestion", "width": 20},
+                {"name": "Tipo de intervención", "width": 25},
+                {"name": "Fecha de derivación", "width": 25},
+                {"name": "Ultima Actualización", "width": 27},
+                {"name": "R.U.T", "width": 50},
+                {"name": "Nombre Trabajador", "width": 27},
+                {"name": "Empresa", "width": 40},
+                {"name": "Obra", "width": 40},
+                {"name": "Fuente de Empresa", "width": 40},
+                {"name": "Oficina", "width": 40},
+                {"name": "Profesional", "width": 40},
+                {"name": "Area", "width": 40},
+                {"name": "Trabajador Atendido", "width": 40},
+                {"name": "Fuente del Sistema", "width": 40},
+                {"name": "Observaciones", "width": 100},
+                {"name": "Observaciones Empresa", "width": 100},
+                {"name": "Caso Id", "width": 10}]
+
+    attrs = ["id", 
+            "status",
+            "managment_type",
+            "contact_method", 
+            "date",
+            "update_at",
+            "employee_rut", 
+            "employee_name",
+            "business_name", 
+            "construction_name",
+            "source_business",
+            "attention_place",
+            "assigned_id",
+            "area_name",
+            "attended_name",
+            "source_system",
+            "observation",
+            "company_report_observation",
+            "case_id"]
+
+    output = BytesIO()
+
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+
+    cell_format = workbook.add_format()
+    cell_format.set_text_wrap()
+
+    header_style = {
+        'bg_color': '#AED5FF',
+        'color': 'black',
+        'align': 'center',
+        'valign': 'top',
+        'border': 1,
+        'text_wrap': True
+    }
+
+    center_header = workbook.add_format({**header_style, "align": "center"})
+    cell = workbook.add_format({
+        'color': 'black',
+        'valign': 'top',
+        'border': 1,
+        'text_wrap': True
+    })
+
+    company_name = list[0]["business_name"]
+    worksheet.write(1, 0, f"Visitas Empresa: {company_name}")
 
     
 

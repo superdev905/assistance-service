@@ -9,8 +9,9 @@ from fastapi.param_functions import Depends
 from app.database.main import get_database
 from ...middlewares.auth import JWTBearer
 from ...helpers.crud import get_updated_obj
-from .services import generate_visits_excel
+from .services import generate_visits_excel, generate_assistance_by_employee_excel, generate_assistance_by_company_excel
 from ..visit.model import Visit
+from ..assistance.model import Assistance
 from .schema import ReportVisitDateRange
 
 router = APIRouter(
@@ -55,4 +56,32 @@ def generate_visit_report(req: Request, range: ReportVisitDateRange, db: Session
     buffer_export = generate_visits_excel(
         req, result, start, end)
 
+    return StreamingResponse(buffer_export, headers=headers)
+
+@router.post("/assistance-employee",)
+def generate_assistance_by_employee_report(req: Request, employee_id: int, db: Session = Depends(get_database)):
+    
+    result = [a.__dict__ for a in db.query(Assistance).filter(Assistance.employee_id == employee_id).all()]
+
+    buffer_export = generate_assistance_by_employee_excel(req, result)
+
+    rut_employee = result[0]["employee_rut"]
+    file_name = f"Visitas_Trabajador_{rut_employee}"
+    headers = {
+        'Content-Disposition': f"attachment; filename={file_name}.xlsx"
+    }
+    return StreamingResponse(buffer_export, headers=headers)
+
+@router.post("/assistance-company",)
+def generate_assistance_by_company_report(req: Request, business_id: int, db: Session = Depends(get_database)):
+    
+    result = [a.__dict__ for a in db.query(Assistance).filter(Assistance.business_id == business_id).all()]
+
+    buffer_export = generate_assistance_by_company_excel(req, result)
+
+    company_name = result[0]["business_name"]
+    file_name = f"Visitas_Empresa_{company_name}"
+    headers = {
+        'Content-Disposition': f"attachment; filename={file_name}.xlsx"
+    }
     return StreamingResponse(buffer_export, headers=headers)
