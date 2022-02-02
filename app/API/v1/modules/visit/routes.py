@@ -1,4 +1,3 @@
-import requests
 from datetime import datetime
 from typing import List, Optional
 from fastapi import status, APIRouter, Request, Query
@@ -74,6 +73,8 @@ def get_calendar_events(req: Request,
     user_role = current_user["role"]["key"]
 
     filters = []
+    users_filters = []
+    users_ids = []
 
     if start_date and end_date:
         filters.append(Visit.start_date >= start_date)
@@ -81,11 +82,14 @@ def get_calendar_events(req: Request,
     if status:
         filters.append(Visit.status == status)
     if users:
-        filters.append(Visit.assigned_id.in_(users))
-    if user_role == "SOCIAL_ASSISTANCE":
-        filters.append(Visit.assigned_id == user_id)
+        for i in users:
+            users_ids.append(i)
+    users_ids.append(user_id)
+    users_filters.append(Visit.assigned_id.in_(users_ids))
+
     items = []
-    events = db.query(Visit).filter(*filters).order_by(Visit.date).all()
+    events = db.query(Visit).filter(
+        and_(or_(*filters), *users_filters)).order_by(Visit.date).all()
 
     for visit in events:
         items.append(
