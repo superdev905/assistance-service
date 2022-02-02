@@ -26,24 +26,32 @@ router = APIRouter(
 
 
 @router.get("/calendar/stats")
-def get_calendar_stats(users: List[int] = Query(None),
+def get_calendar_stats(req: Request,
+                       users: List[int] = Query(None),
                        start_date: Optional[datetime] = Query(
                            None, alias="startDate"),
                        end_date: Optional[datetime] = Query(
                            None, alias="endDate"),
                        db: Session = Depends(get_database)):
     filters = []
+    users_filters = []
+    users_ids = []
     if start_date and end_date:
         filters.append(Visit.start_date >= start_date)
         filters.append(Visit.end_date <= end_date)
     if users:
-        filters.append(Visit.assigned_id.in_(users))
+        for i in users:
+            users.append(i)
+    users_ids.append(req.user_id)
+
+    users_filters.append(Visit.assigned_id.in_(users_ids))
 
     result = []
     docs = db.query(func.count(Visit.id).label("value"),
-                    Visit.status.label("status")).filter(*filters).group_by(Visit.status).all()
+                    Visit.status.label("status")).filter(and_(*filters, *users_filters)).group_by(Visit.status).all()
 
-    total = db.query(func.count(Visit.id)).filter(and_(*filters)).all()
+    total = db.query(func.count(Visit.id)).filter(
+        and_(*filters, *users_filters)).all()
 
     result.append({"label": "Total", "value": total})
 
