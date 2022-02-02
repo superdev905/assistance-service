@@ -20,11 +20,12 @@ def generate_visits_excel(req: Request,
     dataList = []
     for item in list:
         user = fetch_users_service(req.token, str(item["assigned_id"]))
+        user_name = (f"{user['names']} {user['paternal_surname']} {user['maternal_surname']}")
         shift_details = fetch_parameter_data(
             req.token, "shift", item["shift_id"])
         businnes_details = get_business_data(req.token, "business", item["business_id"])
         construction_details = get_business_data(req.token, "constructions", businnes_details["id"])
-        dataList.append({**item, "assigned": (f"{user['names']} {user['paternal_surname']} {user['maternal_surname']}"),
+        dataList.append({**item, "assigned": user_name,
                         "date": item["date"].strftime('%d-%m-%Y'),
                          "end_date": item["end_date"].strftime('%H:%M:%S'),
                          "start_date": item["start_date"].strftime('%H:%M:%S'),
@@ -122,8 +123,192 @@ def generate_visits_excel(req: Request,
 
     return output
 
+def generate_visits_by_company_excel(req: Request, list: List[dict], company_name: str):
 
-def generate_assistance_by_employee_excel(req: Request, list: List[dict]):
+    dataList = []
+    for item in list:
+        user = fetch_users_service(req.token, str(item["assigned_id"]))
+        user_name = (f"{user['names']} {user['paternal_surname']} {user['maternal_surname']}")
+        shift_details = fetch_parameter_data(
+            req.token, "shift", item["shift_id"])
+        businnes_details = get_business_data(req.token, "business", item["business_id"])
+        construction_details = get_business_data(req.token, "constructions", businnes_details["id"])
+        dataList.append({**item, "assigned": user_name,
+                        "date": item["date"].strftime('%d-%m-%Y'),
+                         "end_date": item["end_date"].strftime('%H:%M:%S'),
+                         "start_date": item["start_date"].strftime('%H:%M:%S'),
+                         "shift_name": shift_details["name"].capitalize(),
+                         "status": item["status"].capitalize(),
+                         "business_name": businnes_details["name"],
+                         "construction_name": construction_details["name"]})
+
+    headings = [{"name": "Fecha", "width": 10},
+                {"name": "Hora de inicio", "width": 20},
+                {"name": "Hora de fin", "width": 20},
+                {"name": "Estado", "width": 15},
+                {"name": "Jornada", "width": 15},
+                {"name": "Título", "width": 50},
+                {"name": "Profesional", "width": 20},
+                {"name": "Empresa", "width": 40},
+                {"name": "Obra", "width": 40},
+                {"name": "Observaciones", "width": 100}]
+
+    attrs = ["date", 
+            "start_date", 
+            "end_date", 
+            "status",
+            "shift_name",
+            "title", 
+            "assigned",
+            "business_name", 
+            "construction_name",
+            "observation"]
+
+    output = BytesIO()
+
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+
+    cell_format = workbook.add_format()
+    cell_format.set_text_wrap()
+
+    header_style = {
+        'bg_color': '#AED5FF',
+        'color': 'black',
+        'align': 'center',
+        'valign': 'top',
+        'border': 1,
+        'text_wrap': True
+    }
+
+    center_header = workbook.add_format({**header_style, "align": "center"})
+    cell = workbook.add_format({
+        'color': 'black',
+        'valign': 'top',
+        'border': 1,
+        'text_wrap': True
+    })
+
+    worksheet.write(1, 0, f"Todos los Registros de Visitas de la Empresa: {company_name}")
+
+    heading_index = 0
+    for head in headings:
+        worksheet.set_column(3, heading_index, head["width"])
+        worksheet.write(
+            3, heading_index, head["name"], center_header)
+        heading_index += 1
+
+    row = 4
+
+    for item in dataList:
+        col = 0
+        for attr in attrs:
+            worksheet.write(
+                row, col, item[attr], cell)
+            col += 1
+
+        row += 1
+
+    worksheet.hide_gridlines(2)
+
+    workbook.close()
+    output.seek(0)
+
+    return output
+
+def generate_visits_by_assigned_excel(req: Request, list: List[dict]):
+
+    dataList = []
+    for item in list:
+        user = fetch_users_service(req.token, str(item["assigned_id"]))
+        user_name = (f"{user['names']} {user['paternal_surname']} {user['maternal_surname']}")
+        shift_details = fetch_parameter_data(req.token, "shift", item["shift_id"])
+        businnes_details = get_business_data(req.token, "business", item["business_id"])
+        construction_details = get_business_data(req.token, "constructions", businnes_details["id"])
+        dataList.append({**item, "assigned": user_name,
+                        "date": item["date"].strftime('%d-%m-%Y'),
+                         "end_date": item["end_date"].strftime('%H:%M:%S'),
+                         "start_date": item["start_date"].strftime('%H:%M:%S'),
+                         "shift_name": shift_details["name"].capitalize(),
+                         "status": item["status"].capitalize(),
+                         "business_name": businnes_details["name"],
+                         "construction_name": construction_details["name"]})
+
+    headings = [{"name": "Fecha", "width": 10},
+                {"name": "Hora de inicio", "width": 20},
+                {"name": "Hora de fin", "width": 20},
+                {"name": "Estado", "width": 15},
+                {"name": "Jornada", "width": 15},
+                {"name": "Título", "width": 50},
+                {"name": "Profesional", "width": 20},
+                {"name": "Empresa", "width": 40},
+                {"name": "Obra", "width": 40},
+                {"name": "Observaciones", "width": 100}]
+
+    attrs = ["date", 
+            "start_date", 
+            "end_date", 
+            "status",
+            "shift_name",
+            "title", 
+            "assigned",
+            "business_name", 
+            "construction_name",
+            "observation"]
+
+    output = BytesIO()
+
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+
+    cell_format = workbook.add_format()
+    cell_format.set_text_wrap()
+
+    header_style = {
+        'bg_color': '#AED5FF',
+        'color': 'black',
+        'align': 'center',
+        'valign': 'top',
+        'border': 1,
+        'text_wrap': True
+    }
+
+    center_header = workbook.add_format({**header_style, "align": "center"})
+    cell = workbook.add_format({
+        'color': 'black',
+        'valign': 'top',
+        'border': 1,
+        'text_wrap': True
+    })
+
+    worksheet.write(1, 0, f"Todos los Registros de Visitas del Profesional: {user_name}")
+
+    heading_index = 0
+    for head in headings:
+        worksheet.set_column(3, heading_index, head["width"])
+        worksheet.write(
+            3, heading_index, head["name"], center_header)
+        heading_index += 1
+
+    row = 4
+
+    for item in dataList:
+        col = 0
+        for attr in attrs:
+            worksheet.write(
+                row, col, item[attr], cell)
+            col += 1
+
+        row += 1
+
+    worksheet.hide_gridlines(2)
+
+    workbook.close()
+    output.seek(0)
+
+    return output
+
+def generate_assistance_by_employee_excel(req: Request, list: List[dict], rut_employee: str):
     dataList = []
     for item in list:
 
@@ -215,9 +400,7 @@ def generate_assistance_by_employee_excel(req: Request, list: List[dict]):
         'border': 1,
         'text_wrap': True
     })
-    header = workbook.add_format({**header_style})
 
-    rut_employee = list[0]["employee_rut"]
     worksheet.write(1, 0, f"Visitas del Trabajador con el Rut: {rut_employee}")
 
     
@@ -248,7 +431,7 @@ def generate_assistance_by_employee_excel(req: Request, list: List[dict]):
     return output
 
 
-def generate_assistance_by_company_excel(req: Request, list: List[dict]):
+def generate_assistance_by_company_excel(req: Request, list: List[dict], company_name: str):
     dataList = []
     for item in list:
 
@@ -341,7 +524,6 @@ def generate_assistance_by_company_excel(req: Request, list: List[dict]):
         'text_wrap': True
     })
 
-    company_name = list[0]["business_name"]
     worksheet.write(1, 0, f"Visitas Empresa: {company_name}")
 
     
