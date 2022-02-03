@@ -80,7 +80,6 @@ def generate_visits_excel(req: Request,
         'border': 1,
         'text_wrap': True
     })
-    header = workbook.add_format({**header_style})
 
     if(start_date == None and end_date == None):
         worksheet.write(1, 0, "Todos los Registros de Visitas a la Fecha")
@@ -123,7 +122,7 @@ def generate_visits_excel(req: Request,
 
     return output
 
-def generate_visits_by_company_excel(req: Request, list: List[dict], company_name: str):
+def generate_visits_by_company_excel(req: Request, list: List[dict], company_name: str, start_: datetime, end_: datetime):
 
     dataList = []
     for item in list:
@@ -189,7 +188,19 @@ def generate_visits_by_company_excel(req: Request, list: List[dict], company_nam
         'text_wrap': True
     })
 
-    worksheet.write(1, 0, f"Todos los Registros de Visitas de la Empresa: {company_name}")
+    if(start_ == None and end_ == None):
+        worksheet.write(1, 0, f"Todos los Registros de Visitas de la Empresa: {company_name}")
+
+    elif(start_ and end_):
+        worksheet.write(1, 0, f"Todos los Registros de Visitas de la Empresa: {company_name} desde {start_.strftime('%d-%m-%Y')} al {end_.strftime('%d-%m-%Y')}")
+
+    elif (end_ == None and start_):
+        worksheet.write(1, 0, f"Todos los Registros de Visitas de la Empresa: {company_name} desde {start_.strftime('%d-%m-%Y')} hasta hoy")
+
+    elif (start_ == None and end_):
+        worksheet.write(1, 0, f"Todos los Registros de Visitas de la Empresa: {company_name} hasta {end_.strftime('%d-%m-%Y')}")
+        
+    
 
     heading_index = 0
     for head in headings:
@@ -216,7 +227,7 @@ def generate_visits_by_company_excel(req: Request, list: List[dict], company_nam
 
     return output
 
-def generate_visits_by_assigned_excel(req: Request, list: List[dict]):
+def generate_visits_by_assigned_excel(req: Request, list: List[dict], start_: datetime, end_: datetime):
 
     dataList = []
     for item in list:
@@ -281,7 +292,17 @@ def generate_visits_by_assigned_excel(req: Request, list: List[dict]):
         'text_wrap': True
     })
 
-    worksheet.write(1, 0, f"Todos los Registros de Visitas del Profesional: {user_name}")
+    if(start_ == None and end_ == None):
+        worksheet.write(1, 0, f"Todos los Registros de Visitas del Profesional: {user_name}")
+
+    elif(start_ and end_):
+        worksheet.write(1, 0, f"Todos los Registros de Visitas del Profesional: {user_name} desde {start_.strftime('%d-%m-%Y')} al {end_.strftime('%d-%m-%Y')}")
+
+    elif (end_ == None and start_):
+        worksheet.write(1, 0, f"Todos los Registros de Visitas del Profesional: {user_name} desde {start_.strftime('%d-%m-%Y')} hasta hoy")
+
+    elif (start_ == None and end_):
+        worksheet.write(1, 0, f"Todos los Registros de Visitas del Profesional: {user_name} hasta {end_.strftime('%d-%m-%Y')}")
 
     heading_index = 0
     for head in headings:
@@ -308,12 +329,13 @@ def generate_visits_by_assigned_excel(req: Request, list: List[dict]):
 
     return output
 
-def generate_assistance_by_employee_excel(req: Request, list: List[dict], rut_employee: str):
+def generate_assistance_by_employee_excel(req: Request, list: List[dict], rut_employee: str, start_: datetime, end_: datetime):
     dataList = []
     for item in list:
 
         managment = get_managment_data(req.token, str(item["management_id"]))
-
+        user = fetch_users_service(req.token, str(item["assigned_id"]))
+        user_name = (f"{user['names']} {user['paternal_surname']} {user['maternal_surname']}")
         dataList.append({
             "id": item["id"],
             "status": item["status"],
@@ -327,7 +349,7 @@ def generate_assistance_by_employee_excel(req: Request, list: List[dict], rut_em
             "construction_name": item["construction_name"],
             "source_business": item["source_business"],
             "attention_place": item["attention_place"],
-            "assigned_id": item["assigned_id"],
+            "assigned": user_name,
             "area_name": item["area_name"],
             "attended_name": item["attended_name"],
             "source_system": item["source_system"],
@@ -350,11 +372,11 @@ def generate_assistance_by_employee_excel(req: Request, list: List[dict], rut_em
                 {"name": "Oficina", "width": 40},
                 {"name": "Profesional", "width": 40},
                 {"name": "Area", "width": 40},
-                {"name": "Trabajador Atendido", "width": 40},
-                {"name": "Fuente del Sistema", "width": 40},
+                {"name": "Persona Atendido", "width": 40},
+                {"name": "Sistema de Origen", "width": 40},
                 {"name": "Observaciones", "width": 100},
                 {"name": "Observaciones Empresa", "width": 100},
-                {"name": "Caso Id", "width": 10}]
+                {"name": "Nro Caso", "width": 10}]
 
     attrs = ["id", 
             "status",
@@ -368,7 +390,7 @@ def generate_assistance_by_employee_excel(req: Request, list: List[dict], rut_em
             "construction_name",
             "source_business",
             "attention_place",
-            "assigned_id",
+            "assigned",
             "area_name",
             "attended_name",
             "source_system",
@@ -401,9 +423,17 @@ def generate_assistance_by_employee_excel(req: Request, list: List[dict], rut_em
         'text_wrap': True
     })
 
-    worksheet.write(1, 0, f"Visitas del Trabajador con el Rut: {rut_employee}")
+    if(start_ == None and end_ == None):
+        worksheet.write(1, 0, f"Todos los Registros de Asistencias del Trabajador con el rut: {rut_employee}")
 
-    
+    elif(start_ and end_):
+        worksheet.write(1, 0, f"Todos los Registros de Asistencias del Trabajador con el rut: {rut_employee} desde {start_.strftime('%d-%m-%Y')} al {end_.strftime('%d-%m-%Y')}")
+
+    elif (end_ == None and start_):
+        worksheet.write(1, 0, f"Todos los Registros de Asistencias del Trabajador con el rut: {rut_employee} desde {start_.strftime('%d-%m-%Y')} hasta hoy")
+
+    elif (start_ == None and end_):
+        worksheet.write(1, 0, f"Todos los Registros de Asistencias del Trabajador con el rut: {rut_employee} hasta {end_.strftime('%d-%m-%Y')}")
 
     heading_index = 0
     for head in headings:
@@ -430,13 +460,13 @@ def generate_assistance_by_employee_excel(req: Request, list: List[dict], rut_em
 
     return output
 
-
-def generate_assistance_by_company_excel(req: Request, list: List[dict], company_name: str):
+def generate_assistance_by_company_excel(req: Request, list: List[dict], company_name: str, start_: datetime, end_: datetime):
     dataList = []
     for item in list:
 
         managment = get_managment_data(req.token, str(item["management_id"]))
-
+        user = fetch_users_service(req.token, str(item["assigned_id"]))
+        user_name = (f"{user['names']} {user['paternal_surname']} {user['maternal_surname']}")
         dataList.append({
             "id": item["id"],
             "status": item["status"],
@@ -450,7 +480,7 @@ def generate_assistance_by_company_excel(req: Request, list: List[dict], company
             "construction_name": item["construction_name"],
             "source_business": item["source_business"],
             "attention_place": item["attention_place"],
-            "assigned_id": item["assigned_id"],
+            "assigned": user_name,
             "area_name": item["area_name"],
             "attended_name": item["attended_name"],
             "source_system": item["source_system"],
@@ -473,11 +503,11 @@ def generate_assistance_by_company_excel(req: Request, list: List[dict], company
                 {"name": "Oficina", "width": 40},
                 {"name": "Profesional", "width": 40},
                 {"name": "Area", "width": 40},
-                {"name": "Trabajador Atendido", "width": 40},
-                {"name": "Fuente del Sistema", "width": 40},
+                {"name": "Persona Atendido", "width": 40},
+                {"name": "Sistema de Origen", "width": 40},
                 {"name": "Observaciones", "width": 100},
                 {"name": "Observaciones Empresa", "width": 100},
-                {"name": "Caso Id", "width": 10}]
+                {"name": "Nro Caso", "width": 10}]
 
     attrs = ["id", 
             "status",
@@ -491,7 +521,7 @@ def generate_assistance_by_company_excel(req: Request, list: List[dict], company
             "construction_name",
             "source_business",
             "attention_place",
-            "assigned_id",
+            "assigned",
             "area_name",
             "attended_name",
             "source_system",
@@ -524,9 +554,17 @@ def generate_assistance_by_company_excel(req: Request, list: List[dict], company
         'text_wrap': True
     })
 
-    worksheet.write(1, 0, f"Visitas Empresa: {company_name}")
+    if(start_ == None and end_ == None):
+        worksheet.write(1, 0, f"Todos los Registros de Asistencias de la Empresa: {company_name}")
 
-    
+    elif(start_ and end_):
+        worksheet.write(1, 0, f"Todos los Registros de Asistencias de la Empresa: {company_name} desde {start_.strftime('%d-%m-%Y')} al {end_.strftime('%d-%m-%Y')}")
+
+    elif (end_ == None and start_):
+        worksheet.write(1, 0, f"Todos los Registros de Asistencias de la Empresa: {company_name} desde {start_.strftime('%d-%m-%Y')} hasta hoy")
+
+    elif (start_ == None and end_):
+        worksheet.write(1, 0, f"Todos los Registros de Asistencias de la Empresa: {company_name} hasta {end_.strftime('%d-%m-%Y')}")
 
     heading_index = 0
     for head in headings:
