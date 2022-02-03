@@ -11,44 +11,45 @@ def get_db_url(env: str) -> str:
     return os.getenv("DATABASE_URL_DEV")
 
 
-BASE_HOSTNAME = "http://host.docker.internal"
+def get_env_prefix(env: str) -> str:
+    if env == "production":
+        return "PROD"
+    if env == "testing":
+        return "TEST"
+    return "DEV"
 
-services_hostnames = {
-    "parameters": {
-        "development": BASE_HOSTNAME + ":5200/api/v1",
-        "testing": BASE_HOSTNAME + ":5195/api/v1",
-        "production": BASE_HOSTNAME + ":5105/api/v1",
-    },
-    "employees": {
-        "development": BASE_HOSTNAME + ":8000/api/v1",
-        "testing": BASE_HOSTNAME + ":5194/api/v1",
-        "production": BASE_HOSTNAME + ":5104/api/v1",
-    },
-    "business": {
-        "development": BASE_HOSTNAME + "/api/v1",
-        "testing": BASE_HOSTNAME + ":5192/api/v1",
-        "production": BASE_HOSTNAME + ":5103/api/v1",
-    },
-    "users": {
-        "development": BASE_HOSTNAME + ":5500/api/v1",
-        "testing": BASE_HOSTNAME + ":5192/api/v1",
-        "production": BASE_HOSTNAME + ":5102/api/v1",
-    },
-    "social_case": {
-        "development": BASE_HOSTNAME + ":5196/api/v1",
-        "testing": BASE_HOSTNAME + ":5192/api/v1",
-        "production": BASE_HOSTNAME + ":5113/api/v1",
-    },
-}
 
 ENV = os.getenv("ENV")
+
+
+services_hostnames = {
+    "assistance": os.getenv("ASSISTANCE_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "users": os.getenv("AUTH_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "benefits": os.getenv("BENEFITS_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "business": os.getenv("BUSINESS_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "cesantes": os.getenv("CESANTES_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "consultas_web": os.getenv("CONSULTAS_WEB_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "courses": os.getenv("CURSOS_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "employees": os.getenv("EMPLOYEE_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "inclusion": os.getenv("INCLUSION_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "migrantes": os.getenv("MIGRANTES_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "parameters": os.getenv("PARAMETERS_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "poll": os.getenv("POLLS_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "protocols": os.getenv("PROTOCOLS_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "schedule": os.getenv("SCHEDULE_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "scholarship": os.getenv("SCHOLARSHIP_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "social_case": os.getenv("SOCIAL_CASE_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+    "vivienda": os.getenv("VIVIENDA_SERVICE_%s" % (get_env_prefix(ENV))) + "/api/v1",
+
+}
+
 
 DATABASE_URL = get_db_url(ENV)
 
 SERVICES = {
-    "parameters": services_hostnames["parameters"][ENV],
-    "employees": services_hostnames["employees"][ENV],
-    "business": services_hostnames["business"][ENV],
-    "users": services_hostnames["users"][ENV],
-    "social_case": services_hostnames["social_case"][ENV],
+    "parameters": services_hostnames["parameters"],
+    "employees": services_hostnames["employees"],
+    "business": services_hostnames["business"],
+    "users": services_hostnames["users"],
+    "social_case": services_hostnames["social_case"],
 }
