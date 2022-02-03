@@ -28,7 +28,7 @@ class ReportVisitDateRange(BaseModel):
         }
 
 class ReportVisitsbyCompany(BaseModel):
-    business_id: str
+    id: str
     startDate: Optional[str]
     endDate: Optional[str]
 
@@ -43,7 +43,7 @@ class ReportVisitsbyCompany(BaseModel):
         }
 
 class ReportVisitsbyAssigned(BaseModel):
-    assigned_id: str
+    id: str
     startDate: Optional[str]
     endDate: Optional[str]
 
@@ -58,7 +58,7 @@ class ReportVisitsbyAssigned(BaseModel):
         }
 
 class ReportAssistancebyEmployee(BaseModel):
-    employee_id: str
+    id: str
     startDate: Optional[str]
     endDate: Optional[str]
 
@@ -73,7 +73,7 @@ class ReportAssistancebyEmployee(BaseModel):
         }
 
 class ReportAssistancebyCompany(BaseModel):
-    business_id: str
+    id: str
     startDate: Optional[str]
     endDate: Optional[str]
 
