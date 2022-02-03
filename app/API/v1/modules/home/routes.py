@@ -13,7 +13,8 @@ from ...helpers.crud import get_updated_obj
 from ...helpers.fetch_data import fetch_list_parameters, fetch_parameter_data, fetch_users_service
 from ..visit.model import Visit
 from ..assistance.model import Assistance
-from .schema import AssistanceHome, VisitHome
+from .schema import AssistanceHome, DeliveredBenefit, VisitHome
+from .services import get_delivered_benefit
 
 router = APIRouter(
     prefix="/home",
@@ -70,7 +71,7 @@ def get_last_five_visits(req: Request,  db: Session = Depends(get_database)):
         filters.append(Assistance.assigned_id == req.user_id)
 
     docs = db.query(Assistance).filter(*filters).order_by(
-        Assistance.date.desc()).limit(7).all()
+        Assistance.date.desc()).limit(5).all()
     result = []
     for doc in docs:
         user = fetch_users_service(req.token, doc.assigned_id)
@@ -80,5 +81,42 @@ def get_last_five_visits(req: Request,  db: Session = Depends(get_database)):
                 management_name = i["name"]
         result.append({**doc.__dict__, "assistance": user,
                       "management_name": management_name})
+
+    return result
+
+
+@router.get("/delivered-benefits", response_model=List[DeliveredBenefit])
+def get_last_five_visits(req: Request,  db: Session = Depends(get_database)):
+    """
+    Retorna las 5 ultimos beneficios entregados
+    """
+    filters = []
+    result = []
+
+    current_user = fetch_users_service(req.token, req.user_id)
+    current_user_role = current_user["role"]["key"]
+
+    managements = fetch_list_parameters(req.token, "management")
+
+    if current_user_role == "SOCIAL_ASSISTANCE":
+        filters.append(Assistance.assigned_id == req.user_id)
+
+    management_delivered_id = None
+
+    for i in managements:
+        if i["name"] == "ENTREGA DE BENEFICIO":
+            management_delivered_id = i["id"]
+
+    filters.append(Assistance.management_id == management_delivered_id)
+
+    docs = db.query(Assistance).filter(*filters).order_by(
+        Assistance.date.desc()).limit(5).all()
+
+    for i in docs:
+        activity = get_delivered_benefit(req, i.id)
+        user = fetch_users_service(req.token, i.assigned_id)
+        result.append({**i.__dict__,
+                       "assistance": user,
+                      "activity": activity})
 
     return result

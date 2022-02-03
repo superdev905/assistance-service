@@ -52,4 +52,5 @@ SERVICES = {
     "business": services_hostnames["business"],
     "users": services_hostnames["users"],
     "social_case": services_hostnames["social_case"],
+    "benefits": services_hostnames["benefits"],
 }
