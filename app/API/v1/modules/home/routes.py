@@ -1,16 +1,11 @@
-from datetime import datetime
-from operator import and_
 from typing import List
-from fastapi import status, APIRouter, Request, Query
-from fastapi.encoders import jsonable_encoder
-from fastapi.exceptions import HTTPException
-from starlette.responses import StreamingResponse
+from fastapi import APIRouter, Request
+from sqlalchemy.sql.expression import and_
 from sqlalchemy.orm.session import Session
 from fastapi.param_functions import Depends
 from app.database.main import get_database
 from ...middlewares.auth import JWTBearer
-from ...helpers.crud import get_updated_obj
-from ...helpers.fetch_data import fetch_list_parameters, fetch_parameter_data, fetch_users_service
+from ...helpers.fetch_data import fetch_list_parameters, fetch_users_service
 from ..visit.model import Visit
 from ..assistance.model import Assistance
 from .schema import AssistanceHome, DeliveredBenefit, VisitHome
@@ -25,7 +20,7 @@ router = APIRouter(
 @router.get("/visits", response_model=List[VisitHome])
 def get_last_five_visits(req: Request,  db: Session = Depends(get_database)):
     """
-    Retorna las 5 ultimas visitas pendientes
+    Retorna las 8 ultimas visitas pendientes
     """
     filters = []
 
@@ -45,7 +40,7 @@ def get_last_five_visits(req: Request,  db: Session = Depends(get_database)):
     filters.append(Visit.type_id == visit_type_id)
 
     docs = db.query(Visit).filter(and_(*filters)).order_by(
-        Visit.start_date.desc()).limit(5).all()
+        Visit.start_date.desc()).limit(8).all()
     result = []
     for doc in docs:
         assigned = fetch_users_service(req.token, doc.assigned_id)
