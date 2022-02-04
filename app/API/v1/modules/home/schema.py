@@ -34,6 +34,7 @@ class VisitHome(BaseModel):
 
 class AssistanceHome(BaseModel):
     date: datetime
+    id: int
     employee_rut: str = Field(alias="employeeRut")
     employee_id: int = Field(alias="employeeId")
     employee_name: str = Field(alias="employeeName")
