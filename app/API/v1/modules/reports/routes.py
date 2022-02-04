@@ -67,7 +67,7 @@ def generate_visit_by_company_report(req: Request, schema: ReportVisitsbyCompany
     end_ = None
 
     if(schema.id):
-        id_ = int(schema.id)
+        id_ = schema.id
     if(schema.startDate):
         start_ = datetime.fromisoformat(schema.startDate.replace('Z', '+00:00'))
     if(schema.endDate):
@@ -106,7 +106,7 @@ def generate_visit_by_assigned_report(req: Request, schema: ReportVisitsbyAssign
     end_ = None
 
     if(schema.id):
-        id_ = int(schema.id)
+        id_ = schema.id
     if(schema.startDate):
         start_ = datetime.fromisoformat(schema.startDate.replace('Z', '+00:00'))
     if(schema.endDate):
@@ -143,7 +143,7 @@ def generate_assistance_by_employee_report(req: Request, schema: ReportAssistanc
     end_ = None
 
     if(schema.id):
-        id_ = int(schema.id)
+        id_ = schema.id
     if(schema.startDate):
         start_ = datetime.fromisoformat(schema.startDate.replace('Z', '+00:00'))
     if(schema.endDate):
@@ -185,7 +185,7 @@ def generate_assistance_by_company_report(req: Request, schema: ReportAssistance
     end_ = None
 
     if(schema.id):
-        id_ = int(schema.id)
+        id_ = schema.id
     if(schema.startDate):
         start_ = datetime.fromisoformat(schema.startDate.replace('Z', '+00:00'))
     if(schema.endDate):

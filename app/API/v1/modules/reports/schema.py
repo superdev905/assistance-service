@@ -28,7 +28,7 @@ class ReportVisitDateRange(BaseModel):
         }
 
 class ReportVisitsbyCompany(BaseModel):
-    id: str
+    id: int
     startDate: Optional[str]
     endDate: Optional[str]
 
@@ -36,14 +36,14 @@ class ReportVisitsbyCompany(BaseModel):
         orm_mode = True
         schema_extra = {
             "example": {
-                "business_id": "1",
+                "id": 1,
                 "startDate": "2022-02-02T21:15:59.634Z",
                 "endDate": "2022-02-02T21:15:59.634Z"
             }
         }
 
 class ReportVisitsbyAssigned(BaseModel):
-    id: str
+    id: int
     startDate: Optional[str]
     endDate: Optional[str]
 
@@ -51,14 +51,14 @@ class ReportVisitsbyAssigned(BaseModel):
         orm_mode = True
         schema_extra = {
             "example": {
-                "assigned_id": "1",
+                "id": 1,
                 "startDate": "2022-02-02T21:15:59.634Z",
                 "endDate": "2022-02-02T21:15:59.634Z"
             }
         }
 
 class ReportAssistancebyEmployee(BaseModel):
-    id: str
+    id: int
     startDate: Optional[str]
     endDate: Optional[str]
 
@@ -66,14 +66,14 @@ class ReportAssistancebyEmployee(BaseModel):
         orm_mode = True
         schema_extra = {
             "example": {
-                "employee_id": "1",
+                "id": 1,
                 "startDate": "2022-02-02T21:15:59.634Z",
                 "endDate": "2022-02-02T21:15:59.634Z"
             }
         }
 
 class ReportAssistancebyCompany(BaseModel):
-    id: str
+    id: int
     startDate: Optional[str]
     endDate: Optional[str]
 
@@ -81,7 +81,7 @@ class ReportAssistancebyCompany(BaseModel):
         orm_mode = True
         schema_extra = {
             "example": {
-                "business_id": "1",
+                "business_id": 1,
                 "startDate": "2022-02-02T21:15:59.634Z",
                 "endDate": "2022-02-02T21:15:59.634Z"
             }
