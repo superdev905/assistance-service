@@ -80,8 +80,8 @@ class ReportAssistancebyCompany(BaseModel):
     class Config:
         orm_mode = True
         schema_extra = {
-            "example": {
-                "business_id": 1,
+            "example": {"""  """
+                "id": 1,
                 "startDate": "2022-02-02T21:15:59.634Z",
                 "endDate": "2022-02-02T21:15:59.634Z"
             }
