@@ -70,3 +70,12 @@ def delete_file_from_store(token: str, file_key: str):
     result = handle_response(user_req)
 
     return result
+
+def get_managment_data(token: str, id: str):
+    managment_req = http.request(
+        'GET', SERVICES["parameters"]+"/management/"+id, headers={
+            "Authorization": "Bearer %s" % token
+        })
+    result = handle_response(managment_req)
+
+    return result
