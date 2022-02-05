@@ -15,6 +15,8 @@ from .services import generate_visits_excel, generate_visits_by_company_excel, g
 from ..visit.model import Visit
 from ..assistance.model import Assistance
 from .schema import ReportVisitDateRange, ReportVisitsbyCompany, ReportVisitsbyAssigned, ReportAssistancebyEmployee, ReportAssistancebyCompany
+from ...helpers.fetch_data import fetch_list_parameters
+
 
 router = APIRouter(
     prefix="/reports",
@@ -31,22 +33,28 @@ def generate_visit_report(req: Request, range: ReportVisitDateRange, db: Session
     result = None
     start = None
     end = None
+    visit_type_id = None
     if(range.startDate):
         start = datetime.fromisoformat(range.startDate.replace('Z', '+00:00'))
     if(range.endDate):
         end = datetime.fromisoformat(range.endDate.replace('Z', '+00:00'))
 
+    types = fetch_list_parameters(req.token, "task-type")
+    for i in types:
+        if i["description"] == "VISITA":
+            visit_type_id = i['id']
+
     if(start == None and end == None):
-        result = [v.__dict__ for v in db.query(Visit).all()]
+        result = [v.__dict__ for v in db.query(Visit).filter(Visit.type_id == visit_type_id).all()]
 
     elif(start and end):
-        result = [v.__dict__ for v in db.query(Visit).filter(Visit.date.between(start, end)).all()]
+        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.date.between(start, end), Visit.type_id == visit_type_id)).all()]
         
     elif (end == None):
-        result = [v.__dict__ for v in db.query(Visit).filter(Visit.date >= start).all()]
+        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.date >= start, Visit.type_id == visit_type_id)).all()]
         
     elif (start == None):
-        result = [v.__dict__ for v in db.query(Visit).filter(Visit.date <= end).all()]
+        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.date <= end, Visit.type_id == visit_type_id)).all()]
         
     if(exists(result)):
         file_name = "Visitas"
@@ -65,6 +73,7 @@ def generate_visit_by_company_report(req: Request, schema: ReportVisitsbyCompany
     id_ = None
     start_ = None
     end_ = None
+    visit_type_id = None
 
     if(schema.id):
         id_ = schema.id
@@ -73,18 +82,23 @@ def generate_visit_by_company_report(req: Request, schema: ReportVisitsbyCompany
     if(schema.endDate):
         end_ = datetime.fromisoformat(schema.endDate.replace('Z', '+00:00'))
 
+    types = fetch_list_parameters(req.token, "task-type")
+    for i in types:
+        if i["description"] == "VISITA":
+            visit_type_id = i['id']
+
 
     if(start_ == None and end_ == None):
-        result = [v.__dict__ for v in db.query(Visit).filter(Visit.business_id == id_).all()]
+        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.business_id == id_, Visit.type_id == visit_type_id)).all()]
 
     elif(start_ and end_):
-        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.date.between(start_, end_), Visit.business_id == id_)).all()]
+        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.date.between(start_, end_), Visit.business_id == id_, Visit.type_id == visit_type_id)).all()]
 
     elif (end_ == None and start_):
-        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.business_id == id_, Visit.date >= start_)).all()]
+        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.business_id == id_, Visit.date >= start_, Visit.type_id == visit_type_id)).all()]
 
     elif (start_ == None and end_):
-        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.business_id == id_, Visit.date <= end_)).all()]
+        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.business_id == id_, Visit.date <= end_, Visit.type_id == visit_type_id)).all()]
 
     if(exists(result)):
         company_name = result[0]["business_name"]
@@ -104,6 +118,7 @@ def generate_visit_by_assigned_report(req: Request, schema: ReportVisitsbyAssign
     id_ = None
     start_ = None
     end_ = None
+    visit_type_id = None
 
     if(schema.id):
         id_ = schema.id
@@ -111,18 +126,23 @@ def generate_visit_by_assigned_report(req: Request, schema: ReportVisitsbyAssign
         start_ = datetime.fromisoformat(schema.startDate.replace('Z', '+00:00'))
     if(schema.endDate):
         end_ = datetime.fromisoformat(schema.endDate.replace('Z', '+00:00'))
+
+    types = fetch_list_parameters(req.token, "task-type")
+    for i in types:
+        if i["description"] == "VISITA":
+            visit_type_id = i['id']
     
     if(start_ == None and end_ == None):
-        result = [v.__dict__ for v in db.query(Visit).filter(Visit.assigned_id == id_).all()]
+        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.assigned_id == id_, Visit.type_id == visit_type_id)).all()]
 
     elif(start_ and end_):
-        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.date.between(start_, end_), Visit.assigned_id == id_)).all()]
+        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.date.between(start_, end_), Visit.assigned_id == id_, Visit.type_id == visit_type_id)).all()]
 
     elif (end_ == None and start_):
-        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.assigned_id == id_, Visit.date >= start_)).all()]
+        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.assigned_id == id_, Visit.date >= start_, Visit.type_id == visit_type_id)).all()]
 
     elif (start_ == None and end_):
-        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.assigned_id == id_, Visit.date <= end_)).all()]
+        result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.assigned_id == id_, Visit.date <= end_, Visit.type_id == visit_type_id)).all()]
 
     if(exists(result)):
         file_name = f"Visitas_Profesional_id{id_}"

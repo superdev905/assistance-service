@@ -7,9 +7,16 @@ from io import BytesIO
 from datetime import datetime
 from sqlalchemy.orm.session import Session
 from app.settings import SERVICES
-from ...helpers.fetch_data import fetch_parameter_data, fetch_users_service, get_business_data, get_managment_data
+from ...helpers.fetch_data import fetch_users_service, get_managment_data
 from ...services.file import create_visit_report
 from ..assistance.model import Assistance
+
+
+def validateValue(value):
+    if(value == None):
+        return ''
+    else: 
+        return value
 
 
 def generate_visits_excel(req: Request,
@@ -21,18 +28,16 @@ def generate_visits_excel(req: Request,
     for item in list:
         user = fetch_users_service(req.token, str(item["assigned_id"]))
         user_name = (f"{user['names']} {user['paternal_surname']} {user['maternal_surname']}")
-        shift_details = fetch_parameter_data(
-            req.token, "shift", item["shift_id"])
-        businnes_details = get_business_data(req.token, "business", item["business_id"])
-        construction_details = get_business_data(req.token, "constructions", businnes_details["id"])
+
         dataList.append({**item, "assigned": user_name,
                         "date": item["date"].strftime('%d-%m-%Y'),
                          "end_date": item["end_date"].strftime('%H:%M:%S'),
                          "start_date": item["start_date"].strftime('%H:%M:%S'),
-                         "shift_name": shift_details["name"].capitalize(),
+                         "shift_name": item["shift_name"].capitalize(),
                          "status": item["status"].capitalize(),
-                         "business_name": businnes_details["name"],
-                         "construction_name": construction_details["name"]})
+                         "business_name": validateValue(item["business_name"]),
+                         "construction_name": validateValue(item["construction_name"])
+                         })
 
     headings = [{"name": "Fecha", "width": 10},
                 {"name": "Hora de inicio", "width": 20},
@@ -128,18 +133,17 @@ def generate_visits_by_company_excel(req: Request, list: List[dict], company_nam
     for item in list:
         user = fetch_users_service(req.token, str(item["assigned_id"]))
         user_name = (f"{user['names']} {user['paternal_surname']} {user['maternal_surname']}")
-        shift_details = fetch_parameter_data(
-            req.token, "shift", item["shift_id"])
-        businnes_details = get_business_data(req.token, "business", item["business_id"])
-        construction_details = get_business_data(req.token, "constructions", businnes_details["id"])
+        
+
         dataList.append({**item, "assigned": user_name,
                         "date": item["date"].strftime('%d-%m-%Y'),
                          "end_date": item["end_date"].strftime('%H:%M:%S'),
                          "start_date": item["start_date"].strftime('%H:%M:%S'),
-                         "shift_name": shift_details["name"].capitalize(),
+                         "shift_name": item["shift_name"].capitalize(),
                          "status": item["status"].capitalize(),
-                         "business_name": businnes_details["name"],
-                         "construction_name": construction_details["name"]})
+                         "business_name": validateValue(item["business_name"]),
+                         "construction_name": validateValue(item["construction_name"])
+                         })
 
     headings = [{"name": "Fecha", "width": 10},
                 {"name": "Hora de inicio", "width": 20},
@@ -233,17 +237,16 @@ def generate_visits_by_assigned_excel(req: Request, list: List[dict], start_: da
     for item in list:
         user = fetch_users_service(req.token, str(item["assigned_id"]))
         user_name = (f"{user['names']} {user['paternal_surname']} {user['maternal_surname']}")
-        shift_details = fetch_parameter_data(req.token, "shift", item["shift_id"])
-        businnes_details = get_business_data(req.token, "business", item["business_id"])
-        construction_details = get_business_data(req.token, "constructions", businnes_details["id"])
+
         dataList.append({**item, "assigned": user_name,
                         "date": item["date"].strftime('%d-%m-%Y'),
                          "end_date": item["end_date"].strftime('%H:%M:%S'),
                          "start_date": item["start_date"].strftime('%H:%M:%S'),
-                         "shift_name": shift_details["name"].capitalize(),
+                         "shift_name": item["shift_name"].capitalize(),
                          "status": item["status"].capitalize(),
-                         "business_name": businnes_details["name"],
-                         "construction_name": construction_details["name"]})
+                         "business_name": validateValue(item["business_name"]),
+                         "construction_name": validateValue(item["construction_name"])
+                         })
 
     headings = [{"name": "Fecha", "width": 10},
                 {"name": "Hora de inicio", "width": 20},
@@ -336,6 +339,7 @@ def generate_assistance_by_employee_excel(req: Request, list: List[dict], rut_em
         managment = get_managment_data(req.token, str(item["management_id"]))
         user = fetch_users_service(req.token, str(item["assigned_id"]))
         user_name = (f"{user['names']} {user['paternal_surname']} {user['maternal_surname']}")
+        
         dataList.append({
             "id": item["id"],
             "status": item["status"],
