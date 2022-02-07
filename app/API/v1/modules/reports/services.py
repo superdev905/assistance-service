@@ -234,6 +234,7 @@ def generate_visits_by_company_excel(req: Request, list: List[dict], company_nam
 def generate_visits_by_assigned_excel(req: Request, list: List[dict], start_: datetime, end_: datetime):
 
     dataList = []
+    user_name = None
     for item in list:
         user = fetch_users_service(req.token, str(item["assigned_id"]))
         user_name = (f"{user['names']} {user['paternal_surname']} {user['maternal_surname']}")
@@ -296,16 +297,16 @@ def generate_visits_by_assigned_excel(req: Request, list: List[dict], start_: da
     })
 
     if(start_ == None and end_ == None):
-        worksheet.write(1, 0, f"Todos los Registros de Visitas del Profesional: {user_name}")
+        worksheet.write(1, 0, f"Todos los Registros de Visitas del Profesional: {validateValue(user_name)}")
 
     elif(start_ and end_):
-        worksheet.write(1, 0, f"Todos los Registros de Visitas del Profesional: {user_name} desde {start_.strftime('%d-%m-%Y')} al {end_.strftime('%d-%m-%Y')}")
+        worksheet.write(1, 0, f"Todos los Registros de Visitas del Profesional: {validateValue(user_name)} desde {start_.strftime('%d-%m-%Y')} al {end_.strftime('%d-%m-%Y')}")
 
     elif (end_ == None and start_):
-        worksheet.write(1, 0, f"Todos los Registros de Visitas del Profesional: {user_name} desde {start_.strftime('%d-%m-%Y')} hasta hoy")
+        worksheet.write(1, 0, f"Todos los Registros de Visitas del Profesional: {validateValue(user_name)} desde {start_.strftime('%d-%m-%Y')} hasta hoy")
 
     elif (start_ == None and end_):
-        worksheet.write(1, 0, f"Todos los Registros de Visitas del Profesional: {user_name} hasta {end_.strftime('%d-%m-%Y')}")
+        worksheet.write(1, 0, f"Todos los Registros de Visitas del Profesional: {validateValue(user_name)} hasta {end_.strftime('%d-%m-%Y')}")
 
     heading_index = 0
     for head in headings:
@@ -334,6 +335,7 @@ def generate_visits_by_assigned_excel(req: Request, list: List[dict], start_: da
 
 def generate_assistance_by_employee_excel(req: Request, list: List[dict], rut_employee: str, start_: datetime, end_: datetime):
     dataList = []
+    user_name = None
     for item in list:
 
         managment = get_managment_data(req.token, str(item["management_id"]))

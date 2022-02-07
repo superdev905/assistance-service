@@ -14,7 +14,7 @@ from ...helpers.crud import get_updated_obj
 from .services import generate_visits_excel, generate_visits_by_company_excel, generate_visits_by_assigned_excel, generate_assistance_by_employee_excel, generate_assistance_by_company_excel
 from ..visit.model import Visit
 from ..assistance.model import Assistance
-from .schema import ReportVisitDateRange, ReportVisitsbyCompany, ReportVisitsbyAssigned, ReportAssistancebyEmployee, ReportAssistancebyCompany
+from .schema import ReportVisitDateRange, ReportbyIdAndDateRange
 from ...helpers.fetch_data import fetch_list_parameters
 
 
@@ -56,18 +56,20 @@ def generate_visit_report(req: Request, range: ReportVisitDateRange, db: Session
     elif (start == None):
         result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.date <= end, Visit.type_id == visit_type_id)).all()]
         
+    file_name = "Visitas"
+    headers = {
+        'Content-Disposition': "attachment; filename=" + file_name + ".xlsx"
+    }
+    
     if(exists(result)):
-        file_name = "Visitas"
-        headers = {
-            'Content-Disposition': "attachment; filename=" + file_name + ".xlsx"
-        }
         buffer_export = generate_visits_excel(req, result, start, end)
         return StreamingResponse(buffer_export, headers=headers)
     else:
-        return 'Sin Registros'
+        buffer_export = generate_visits_excel(req, [], start, end)
+        return StreamingResponse(buffer_export, headers=headers)
 
 @router.post("/visit-by-company",)
-def generate_visit_by_company_report(req: Request, schema: ReportVisitsbyCompany, db: Session = Depends(get_database)):
+def generate_visit_by_company_report(req: Request, schema: ReportbyIdAndDateRange, db: Session = Depends(get_database)):
 
     result = None
     id_ = None
@@ -100,6 +102,8 @@ def generate_visit_by_company_report(req: Request, schema: ReportVisitsbyCompany
     elif (start_ == None and end_):
         result = [v.__dict__ for v in db.query(Visit).filter(and_(Visit.business_id == id_, Visit.date <= end_, Visit.type_id == visit_type_id)).all()]
 
+    
+    
     if(exists(result)):
         company_name = result[0]["business_name"]
         file_name = f"Visitas_Empresa_{company_name}"
@@ -109,10 +113,15 @@ def generate_visit_by_company_report(req: Request, schema: ReportVisitsbyCompany
         buffer_export = generate_visits_by_company_excel(req, result, company_name, start_, end_)
         return StreamingResponse(buffer_export, headers=headers)
     else:
-        return 'Sin Registros'
+        file_name = f"Visitas_Empresa_SIN_REGISTROS"
+        headers = {
+            'Content-Disposition': f"attachment; filename={file_name}.xlsx"
+        }
+        buffer_export = generate_visits_by_company_excel(req, [], 'SIN_REGISTROS', start_, end_)
+        return StreamingResponse(buffer_export, headers=headers)
 
 @router.post("/visit-by-assigned",)
-def generate_visit_by_assigned_report(req: Request, schema: ReportVisitsbyAssigned, db: Session = Depends(get_database)):
+def generate_visit_by_assigned_report(req: Request, schema: ReportbyIdAndDateRange, db: Session = Depends(get_database)):
 
     result = None
     id_ = None
@@ -152,10 +161,15 @@ def generate_visit_by_assigned_report(req: Request, schema: ReportVisitsbyAssign
         buffer_export = generate_visits_by_assigned_excel(req, result, start_, end_)
         return StreamingResponse(buffer_export, headers=headers)
     else:
-        return 'Sin Registros'
+        file_name = f"Visitas_Profesional_id_SIN_REGISTROS"
+        headers = {
+            'Content-Disposition': f"attachment; filename={file_name}.xlsx"
+        }
+        buffer_export = generate_visits_by_assigned_excel(req, [], start_, end_)
+        return StreamingResponse(buffer_export, headers=headers)
 
 @router.post("/assistance-employee",)
-def generate_assistance_by_employee_report(req: Request, schema: ReportAssistancebyEmployee, db: Session = Depends(get_database)):
+def generate_assistance_by_employee_report(req: Request, schema: ReportbyIdAndDateRange, db: Session = Depends(get_database)):
     
     result = None
     id_ = None
@@ -184,7 +198,7 @@ def generate_assistance_by_employee_report(req: Request, schema: ReportAssistanc
     
     if(exists(result)):
         rut_employee = result[0]["employee_rut"]
-        file_name = f"Visitas_Trabajador_{rut_employee}"
+        file_name = f"Asistencias_Trabajador_{rut_employee}"
         headers = {
             'Content-Disposition': f"attachment; filename={file_name}.xlsx"
         }
@@ -193,10 +207,18 @@ def generate_assistance_by_employee_report(req: Request, schema: ReportAssistanc
 
         return StreamingResponse(buffer_export, headers=headers)
     else:
-        return 'Sin Registros'
+        rut_employee = 'SIN_REGISTROS'
+        file_name = f"Asistencias_Trabajador_{rut_employee}"
+        headers = {
+            'Content-Disposition': f"attachment; filename={file_name}.xlsx"
+        }
+
+        buffer_export = generate_assistance_by_employee_excel(req, [], rut_employee, start_, end_)
+
+        return StreamingResponse(buffer_export, headers=headers)
 
 @router.post("/assistance-company",)
-def generate_assistance_by_company_report(req: Request, schema: ReportAssistancebyCompany, db: Session = Depends(get_database)):
+def generate_assistance_by_company_report(req: Request, schema: ReportbyIdAndDateRange, db: Session = Depends(get_database)):
     
     
     result = None
@@ -226,7 +248,7 @@ def generate_assistance_by_company_report(req: Request, schema: ReportAssistance
     
     if(exists(result)):
         company_name = result[0]["business_name"]
-        file_name = f"Visitas_Empresa_{company_name}"
+        file_name = f"Asistencias_Empresa_{company_name}"
         headers = {
             'Content-Disposition': f"attachment; filename={file_name}.xlsx"
         }
@@ -234,4 +256,11 @@ def generate_assistance_by_company_report(req: Request, schema: ReportAssistance
 
         return StreamingResponse(buffer_export, headers=headers)
     else:
-        return 'Sin Registros'
+        company_name = 'SIN_REGISTROS'
+        file_name = f"Asistencias_Empresa_{company_name}"
+        headers = {
+            'Content-Disposition': f"attachment; filename={file_name}.xlsx"
+        }
+        buffer_export = generate_assistance_by_company_excel(req, [], company_name, start_, end_)
+
+        return StreamingResponse(buffer_export, headers=headers)
