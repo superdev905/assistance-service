@@ -39,16 +39,16 @@ def generate_visits_excel(req: Request,
                          "construction_name": validateValue(item["construction_name"])
                          })
 
-    headings = [{"name": "Fecha", "width": 10},
-                {"name": "Hora de inicio", "width": 20},
-                {"name": "Hora de fin", "width": 20},
-                {"name": "Estado", "width": 15},
-                {"name": "Jornada", "width": 15},
-                {"name": "Título", "width": 50},
-                {"name": "Profesional", "width": 20},
-                {"name": "Empresa", "width": 40},
-                {"name": "Obra", "width": 40},
-                {"name": "Observaciones", "width": 100}]
+    headings = ["Fecha",
+                "Hora de inicio",
+                "Hora de fin",
+                "Estado",
+                "Jornada",
+                "Título",
+                "Profesional",
+                "Empresa",
+                "Obra",
+                "Observaciones",]
 
     attrs = ["date", 
             "start_date", 
@@ -104,9 +104,9 @@ def generate_visits_excel(req: Request,
 
     heading_index = 0
     for head in headings:
-        worksheet.set_column(3, heading_index, head["width"])
+        worksheet.set_column(3, heading_index, len(head)*4)
         worksheet.write(
-            3, heading_index, head["name"], center_header)
+            3, heading_index, head, center_header)
         heading_index += 1
 
     row = 4
@@ -145,16 +145,16 @@ def generate_visits_by_company_excel(req: Request, list: List[dict], company_nam
                          "construction_name": validateValue(item["construction_name"])
                          })
 
-    headings = [{"name": "Fecha", "width": 10},
-                {"name": "Hora de inicio", "width": 20},
-                {"name": "Hora de fin", "width": 20},
-                {"name": "Estado", "width": 15},
-                {"name": "Jornada", "width": 15},
-                {"name": "Título", "width": 50},
-                {"name": "Profesional", "width": 20},
-                {"name": "Empresa", "width": 40},
-                {"name": "Obra", "width": 40},
-                {"name": "Observaciones", "width": 100}]
+    headings = ["Fecha",
+                "Hora de inicio",
+                "Hora de fin",
+                "Estado",
+                "Jornada",
+                "Título",
+                "Profesional",
+                "Empresa",
+                "Obra",
+                "Observaciones",]
 
     attrs = ["date", 
             "start_date", 
@@ -208,9 +208,9 @@ def generate_visits_by_company_excel(req: Request, list: List[dict], company_nam
 
     heading_index = 0
     for head in headings:
-        worksheet.set_column(3, heading_index, head["width"])
+        worksheet.set_column(3, heading_index, len(head)*4)
         worksheet.write(
-            3, heading_index, head["name"], center_header)
+            3, heading_index, head, center_header)
         heading_index += 1
 
     row = 4
@@ -249,16 +249,16 @@ def generate_visits_by_assigned_excel(req: Request, list: List[dict], start_: da
                          "construction_name": validateValue(item["construction_name"])
                          })
 
-    headings = [{"name": "Fecha", "width": 10},
-                {"name": "Hora de inicio", "width": 20},
-                {"name": "Hora de fin", "width": 20},
-                {"name": "Estado", "width": 15},
-                {"name": "Jornada", "width": 15},
-                {"name": "Título", "width": 50},
-                {"name": "Profesional", "width": 20},
-                {"name": "Empresa", "width": 40},
-                {"name": "Obra", "width": 40},
-                {"name": "Observaciones", "width": 100}]
+    headings = ["Fecha",
+                "Hora de inicio",
+                "Hora de fin",
+                "Estado",
+                "Jornada",
+                "Título",
+                "Profesional",
+                "Empresa",
+                "Obra",
+                "Observaciones",]
 
     attrs = ["date", 
             "start_date", 
@@ -310,9 +310,9 @@ def generate_visits_by_assigned_excel(req: Request, list: List[dict], start_: da
 
     heading_index = 0
     for head in headings:
-        worksheet.set_column(3, heading_index, head["width"])
+        worksheet.set_column(3, heading_index, len(head)*4)
         worksheet.write(
-            3, heading_index, head["name"], center_header)
+            3, heading_index, head, center_header)
         heading_index += 1
 
     row = 4
@@ -364,25 +364,25 @@ def generate_assistance_by_employee_excel(req: Request, list: List[dict], rut_em
             "case_id": item["case_id"]
         })
 
-    headings = [{"name": "Id", "width": 10},
-                {"name": "Estado", "width": 20},
-                {"name": "Tipo de Gestion", "width": 20},
-                {"name": "Tipo de intervención", "width": 25},
-                {"name": "Fecha de derivación", "width": 25},
-                {"name": "Ultima Actualización", "width": 27},
-                {"name": "R.U.T", "width": 50},
-                {"name": "Nombre Trabajador", "width": 27},
-                {"name": "Empresa", "width": 40},
-                {"name": "Obra", "width": 40},
-                {"name": "Fuente de Empresa", "width": 40},
-                {"name": "Oficina", "width": 40},
-                {"name": "Profesional", "width": 40},
-                {"name": "Area", "width": 40},
-                {"name": "Persona Atendido", "width": 40},
-                {"name": "Sistema de Origen", "width": 40},
-                {"name": "Observaciones", "width": 100},
-                {"name": "Observaciones Empresa", "width": 100},
-                {"name": "Nro Caso", "width": 10}]
+    headings = ["Id",
+                "Estado",
+                "Tipo de Gestion",
+                "Tipo de intervención",
+                "Fecha de derivación",
+                "Ultima Actualización",
+                "R.U.T",
+                "Nombre Trabajador",
+                "Empresa",
+                "Obra",
+                "Fuente de Empresa",
+                "Oficina",
+                "Profesional",
+                "Area",
+                "Persona Atendido",
+                "Sistema de Origen",
+                "Observaciones",
+                "Observaciones Empresa",
+                "Nro Caso"]
 
     attrs = ["id", 
             "status",
@@ -443,9 +443,9 @@ def generate_assistance_by_employee_excel(req: Request, list: List[dict], rut_em
 
     heading_index = 0
     for head in headings:
-        worksheet.set_column(3, heading_index, head["width"])
+        worksheet.set_column(3, heading_index, len(head)*4)
         worksheet.write(
-            3, heading_index, head["name"], center_header)
+            3, heading_index, head, center_header)
         heading_index += 1
 
     row = 4
@@ -495,25 +495,25 @@ def generate_assistance_by_company_excel(req: Request, list: List[dict], company
             "case_id": item["case_id"]
         })
 
-    headings = [{"name": "Id", "width": 10},
-                {"name": "Estado", "width": 20},
-                {"name": "Tipo de Gestion", "width": 20},
-                {"name": "Tipo de intervención", "width": 25},
-                {"name": "Fecha de derivación", "width": 25},
-                {"name": "Ultima Actualización", "width": 27},
-                {"name": "R.U.T", "width": 50},
-                {"name": "Nombre Trabajador", "width": 27},
-                {"name": "Empresa", "width": 40},
-                {"name": "Obra", "width": 40},
-                {"name": "Fuente de Empresa", "width": 40},
-                {"name": "Oficina", "width": 40},
-                {"name": "Profesional", "width": 40},
-                {"name": "Area", "width": 40},
-                {"name": "Persona Atendido", "width": 40},
-                {"name": "Sistema de Origen", "width": 40},
-                {"name": "Observaciones", "width": 100},
-                {"name": "Observaciones Empresa", "width": 100},
-                {"name": "Nro Caso", "width": 10}]
+    headings = ["Id",
+                "Estado",
+                "Tipo de Gestion",
+                "Tipo de intervención",
+                "Fecha de derivación",
+                "Ultima Actualización",
+                "R.U.T",
+                "Nombre Trabajador",
+                "Empresa",
+                "Obra",
+                "Fuente de Empresa",
+                "Oficina",
+                "Profesional",
+                "Area",
+                "Persona Atendido",
+                "Sistema de Origen",
+                "Observaciones",
+                "Observaciones Empresa",
+                "Nro Caso"]
 
     attrs = ["id", 
             "status",
@@ -574,9 +574,9 @@ def generate_assistance_by_company_excel(req: Request, list: List[dict], company
 
     heading_index = 0
     for head in headings:
-        worksheet.set_column(3, heading_index, head["width"])
+        worksheet.set_column(3, heading_index, len(head)*4)
         worksheet.write(
-            3, heading_index, head["name"], center_header)
+            3, heading_index, head, center_header)
         heading_index += 1
 
     row = 4
