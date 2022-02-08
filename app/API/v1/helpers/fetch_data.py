@@ -1,6 +1,6 @@
-from fastapi import Request
 import urllib3
 import json
+from fastapi import Request
 from fastapi.exceptions import HTTPException
 from app.settings import SERVICES
 
@@ -54,6 +54,16 @@ def fetch_service(token: str, route: str) -> str:
     return result
 
 
+def handle_request(token: str, route: str, body, method: str = "GET",) -> str:
+    user_req = http.request(
+        method, route, headers={
+            "Authorization": "Bearer %s" % token
+        }, body=json.dumps(body))
+
+    result = handle_response(user_req)
+    return result
+
+
 def get_employee_data(request: Request, id: int):
     return fetch_service(request.token, SERVICES["employees"] + "/employees/"+str(id))
 
@@ -70,6 +80,7 @@ def delete_file_from_store(token: str, file_key: str):
     result = handle_response(user_req)
 
     return result
+
 
 def get_managment_data(token: str, id: str):
     managment_req = http.request(

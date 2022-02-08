@@ -14,6 +14,7 @@ from app.database.main import get_database
 from ...helpers.fetch_data import fetch_parameter_data, fetch_service
 from ...middlewares.auth import JWTBearer
 from ..attachment.services import save_attachment
+from .services import get_attention_tracking_by_employee
 from .model import Assistance
 from .schema import AssistanceCreate, AssistanceDetails, AssistancePatchSchema
 
@@ -174,7 +175,7 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
 
 
 @router.post("")
-def create_one(obj_in: AssistanceCreate, db: Session = Depends(get_database)):
+def create_one(req: Request, obj_in: AssistanceCreate, db: Session = Depends(get_database)):
     """
     Crea una nueva asistencia
     """
@@ -188,6 +189,8 @@ def create_one(obj_in: AssistanceCreate, db: Session = Depends(get_database)):
 
     for attach in obj_in.attachments:
         save_attachment(db, attach, obj_in.created_by, saved_assistance.id)
+
+    get_attention_tracking_by_employee(req, db, obj_in.employee_id)
 
     return {**saved_assistance.__dict__,
             "id": saved_assistance.id}
@@ -256,7 +259,7 @@ def patch_one(id: int,
 
 
 @ router.delete("/{id}")
-def delete_one(id: int,  db: Session = Depends(get_database)):
+def delete_one(req: Request,  id: int,  db: Session = Depends(get_database)):
     """
     Elimina una asistencia
 
@@ -271,4 +274,7 @@ def delete_one(id: int,  db: Session = Depends(get_database)):
 
     db.delete(event)
     db.commit()
+
+    get_attention_tracking_by_employee(req, db, event.employee_id)
+
     return {"message": "Asistencia eliminada"}
