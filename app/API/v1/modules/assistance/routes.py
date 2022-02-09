@@ -14,7 +14,7 @@ from app.database.main import get_database
 from ...helpers.fetch_data import fetch_parameter_data, fetch_service
 from ...middlewares.auth import JWTBearer
 from ..attachment.services import save_attachment
-from .services import get_attention_tracking_by_employee
+from .services import get_attention_tracking_by_employee, search_employees
 from .model import Assistance
 from .schema import AssistanceCreate, AssistanceDetails, AssistancePatchSchema
 
@@ -85,14 +85,12 @@ def get_one(req: Request,
         Assistance.visit_id == visit_id, Assistance.employee_rut.ilike(formatted_search))).group_by(Assistance.employee_id).all()
 
     result = []
-    r = fetch_service(req.token,
-                      SERVICES["employees"]+"/employees?search=" + employee_rut + "&state=CREATED&page=1&size=50")
+    fetched_employees = search_employees(req, employee_rut)
     if len(employees) == 0:
-        for item in r:
+        for item in fetched_employees["items"]:
             result.append({**item, "tag": "N", "is_old": False})
-
     else:
-        for item in r:
+        for item in fetched_employees["items"]:
             temp_item = {**item}
             for emp in employees:
                 if item["id"] == int(emp.employee_id):

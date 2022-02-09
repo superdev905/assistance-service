@@ -1,4 +1,5 @@
 
+
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.orm.session import Session
 from .model import Assistance
@@ -19,3 +20,8 @@ def get_attention_tracking_by_employee(req, db: Session, employee_id: int):
                        "hast_follow_attentions": bool(attentions),
         "last_attention_date": last_attention.date.isoformat()},
         "PATCH",)
+
+
+def search_employees(req, employee_rut: str):
+    return handle_request(req.token, SERVICES["employees"] + "/employees/?search=" +
+                          employee_rut + "&state=CREATED&page=1&size=50", None, "GET")
