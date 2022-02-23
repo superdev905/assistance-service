@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  assistance-api-test:
+    image: cchcdev.azurecr.io/assistance-service:latest
+    domainname: assistance-test
+    container_name: assistance-test
+    command: bash -c "cd / && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 5191 >> r.log"
+    ports:
+      - 5191:5191
+    

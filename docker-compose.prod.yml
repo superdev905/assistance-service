@@ -1,13 +1,10 @@
 version: "3"
-
 services:
   assistance-api:
-    build: .
-    restart: unless-stopped
-    command: bash -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 80"
-    volumes:
-      - .:/app
+    image: cchcprod.azurecr.io/assistance-prod:latest
+    domainname: assistance-api
+    container_name: assistance-api
+    command: bash -c "cd / && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 5191"
     ports:
-      - 5101:80
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 5191:5191
+    

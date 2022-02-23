@@ -10,3 +10,4 @@ COPY ./alembic.ini /alembic.ini
 COPY ./config.cfg /config.cfg
 
 EXPOSE 80:80
+EXPOSE 5191:5191
