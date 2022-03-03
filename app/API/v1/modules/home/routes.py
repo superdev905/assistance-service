@@ -36,11 +36,11 @@ def get_last_five_visits(req: Request,  db: Session = Depends(get_database)):
         if i["description"] == "VISITA":
             visit_type_id = i['id']
 
-    filters.append(Visit.status == "PROGRAMADA")
-    filters.append(Visit.type_id == visit_type_id)
+    filters.append(Visit.status == "PROGRAMADA")  # las reAgendadas por igual
+    filters.append(Visit.type_id == 1)
 
     docs = db.query(Visit).filter(and_(*filters)).order_by(
-        Visit.start_date.desc()).limit(8).all()
+        Visit.start_date.asc()).limit(2).all()
     result = []
     for doc in docs:
         assigned = fetch_users_service(req.token, doc.assigned_id)
