@@ -141,7 +141,7 @@ def get_all(req: Request,
         search_filters.append(
             Visit.construction_name.ilike(formatted_search))
     visits_list = paginate(db.query(Visit).filter(and_(
-        *filters, or_(*search_filters), Visit.status != "CANCELADA")).order_by(Visit.start_date), params)
+        *filters, or_(*search_filters), Visit.status != "CANCELADA", Visit.type_id == 1)).order_by(Visit.start_date), params)
     for visit in visits_list.items:
         close_visit(db, visit)
     return visits_list
