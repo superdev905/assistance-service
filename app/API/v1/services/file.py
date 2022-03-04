@@ -89,7 +89,6 @@ def create_visit_report(token: str, data):
                  report_greenting_title, *sign_elements])
 
     files = {'file': (report_name,  buffer.getvalue(), "application/pdf")}
-    print(SERVICES["parameters"]+"/file/upload")
     response = requests.post(
         SERVICES["parameters"]+"/file/upload", files=files, headers={
             "Authorization": "Bearer %s" % token
