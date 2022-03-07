@@ -105,7 +105,6 @@ def get_calendar_events(req: Request,
              "is_owner": get_owner_status(user_role, visit.assigned_id, req.user_id),
              "assigned": fetch_users_service(req.token, visit.assigned_id)
              })
-        close_visit(db, visit)
     return items
 
 
@@ -142,8 +141,6 @@ def get_all(req: Request,
             Visit.construction_name.ilike(formatted_search))
     visits_list = paginate(db.query(Visit).filter(and_(
         *filters, or_(*search_filters), Visit.status != "CANCELADA", Visit.type_id == 1)).order_by(Visit.start_date), params)
-    for visit in visits_list.items:
-        close_visit(db, visit)
     return visits_list
 
 
