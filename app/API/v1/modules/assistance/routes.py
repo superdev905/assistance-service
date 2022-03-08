@@ -36,16 +36,19 @@ def get_all(visit_id: Optional[int] = None,
     """
 
     items = [{"name": "SALUD", "short": "S"},
-             {"name": "VIVIENDA", "short": "V"},
-             {"name": "PREVISIÓN", "short": "P"},
+             {"name": "INCORPORACION", "short": "IN"},
+             {"name": "FINIQUITADO", "short": "FN"},
+             {"name": "DEUDA / AHORRO", "short": "D"},
              {"name": "FAMILIA", "short": "F"},
-             {"name": "EDUCACION", "short": "E"},
+             {"name": "EDUCACIÓN", "short": "E"},
              {"name": "LEGAL", "short": "L"},
-             {"name": "DEUDA/AHORRO", "short": "D"},
-             {"name": "BENEFICIO EMPRESA", "short": "B"},
              {"name": "FUNDACION RECONOCER", "short": "FR"},
-             {"name": "PROYECTO SOCIAL", "short": "PS"},
-             {"name": "INCORPORACION", "short": "IN"}]
+             {"name": "ATENCIÓN INDIVIDUAL", "short": "AI"},
+             {"name": "ATENCION GRUPAL", "short": "AG"},
+             {"name": "PREVISIÓN", "short": "P"},
+             {"name": "VIVIENDA", "short": "V"},
+             {"name": "PROYECTOS SOCIALES", "short": "PS"},
+             {"name": "BENEFICIOS DE EMPRESA", "short": "B"}]
 
     result_list = []
 
