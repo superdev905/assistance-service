@@ -181,25 +181,48 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
     """
     visit = db.query(Visit).filter(Visit.id == id).first()
 
+    print("Visita solicitada")
+    print(visit)
+
     if not visit:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="No existe una visita con este" + str(id))
 
     shift = fetch_parameter_data(req.token, "shift",  visit.shift_id)
+    print("Shift parameter")
+    print(shift)
     bussiness = get_business_data(req.token,
                                   "business", visit.business_id)if visit.business_id else None
+    print("Bussiness Parameter")
+    print(bussiness)
     construction = get_business_data(req.token,
                                      "constructions", visit.construction_id) if visit.construction_id else None
+    print("Construction parameter")
+    print(construction)
     report = db.query(VisitReport).filter(
         and_(VisitReport.visit_id == id, VisitReport.is_active == True)).order_by(VisitReport.created_at.desc()).first()
+    
+    print("Report parameter")
+    print(report)
 
     assigned_user = fetch_users_service(req.token, visit.assigned_id)
+
+    print("Assigned User parameter")
+    print(assigned_user)
 
     assigned_user = {
         "id": assigned_user["id"],
         "names": assigned_user["names"],
         "paternal_surname": assigned_user["paternal_surname"],
         "maternal_surname": assigned_user["maternal_surname"]}
+    
+    print("Assigned User JSON parameter")
+    print(assigned_user["id"])
+    print(assigned_user["maternal_surname"])
+    print(assigned_user["names"])
+    print(assigned_user["paternal_surname"])
+
+    print('Todo correcto, pasa al return, dónde retorna todos los parámetros anteriores')
 
     return {**visit.__dict__,
             "shift": shift,
