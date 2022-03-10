@@ -179,36 +179,36 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
     ---
     - **id**: id de asistencia/visita
     """
+    now = datetime.now()
+
+    current_time = now.strftime("%H:%M:%S")
+
+    print("Inicio de Solicitud =", current_time)
+    
     visit = db.query(Visit).filter(Visit.id == id).first()
 
-    print("Visita solicitada")
-    print(visit)
+    print("Visita solicitada =", visit, " Hora =", current_time)
 
     if not visit:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="No existe una visita con este" + str(id))
 
     shift = fetch_parameter_data(req.token, "shift",  visit.shift_id)
-    print("Shift parameter")
-    print(shift)
+    print("Shift parameter =", shift, " Hora =", current_time)
     bussiness = get_business_data(req.token,
                                   "business", visit.business_id)if visit.business_id else None
-    print("Bussiness Parameter")
-    print(bussiness)
+    print("Bussiness Parameter =", bussiness, " Hora =", current_time)
     construction = get_business_data(req.token,
                                      "constructions", visit.construction_id) if visit.construction_id else None
-    print("Construction parameter")
-    print(construction)
+    print("Construction parameter =", construction, " Hora =", current_time)
     report = db.query(VisitReport).filter(
         and_(VisitReport.visit_id == id, VisitReport.is_active == True)).order_by(VisitReport.created_at.desc()).first()
     
-    print("Report parameter")
-    print(report)
+    print("Report parameter =", report, " Hora =", current_time)
 
     assigned_user = fetch_users_service(req.token, visit.assigned_id)
 
-    print("Assigned User parameter")
-    print(assigned_user)
+    print("Assigned User parameter =", assigned_user, " Hora =", current_time)
 
     assigned_user = {
         "id": assigned_user["id"],
@@ -222,7 +222,7 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
     print(assigned_user["names"])
     print(assigned_user["paternal_surname"])
 
-    print('Todo correcto, pasa al return, dónde retorna todos los parámetros anteriores')
+    print("Hora =", current_time)
 
     return {**visit.__dict__,
             "shift": shift,
