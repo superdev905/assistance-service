@@ -179,6 +179,9 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
     ---
     - **id**: id de asistencia/visita
     """
+
+    print("Inicio API de obtener una visita en id ", id)
+
     now = datetime.now()
 
     current_time = now.strftime("%H:%M:%S")
