@@ -12,7 +12,7 @@ def handle_response(result, endpoint=None) -> object:
     if(result.status == 200):
         print(result.status, '<<<--- Estatus de la respuesta.')
         print(result.data, '<<<--- Datos en la respuesta.')
-        return json.loads(result.data)
+        return json.loads(result.data[0])
     raise HTTPException(status_code=400, detail="Error al obtener datos")
 
 
