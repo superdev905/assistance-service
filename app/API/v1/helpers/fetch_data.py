@@ -46,7 +46,7 @@ def fetch_users_service(token: str, user_id: int) -> str:
     print(result, "<<<--- Data sin parsear ni nada, en duro")
     print(result[0]["paternal_surname"], '<<<--- Apellido paterno resultante.')
     print(result[0]["maternal_surname"], '<<<--- Apellido materno resultante.')
-    return {**result,
+    return {**result[0],
             "paternalSurname": result[0]["paternal_surname"],
             "maternalSurname": result[0]["maternal_surname"]}
 
