@@ -8,7 +8,10 @@ http = urllib3.PoolManager()
 
 
 def handle_response(result, endpoint=None) -> object:
+    print(result, '<<<--- Resultado de la consulta a AUTH')
     if(result.status == 200):
+        print(result.status, '<<<--- Estatus de la respuesta.')
+        print(result.data, '<<<--- Datos en la respuesta.')
         return json.loads(result.data)
     raise HTTPException(status_code=400, detail="Error al obtener datos")
 
@@ -37,8 +40,11 @@ def fetch_users_service(token: str, user_id: int) -> str:
             "Authorization": "Bearer %s" % token
         })
 
+    print(user_req, '<<<--- USUARIO OBTENIDO DE AUTH SERVICE')
     result = handle_response(user_req)
 
+    print(result["paternal_surname"], '<<<--- Apellido paterno resultante.')
+    print(result["maternal_surname"], '<<<--- Apellido materno resultante.')
     return {**result,
             "paternalSurname": result["paternal_surname"],
             "maternalSurname": result["maternal_surname"]}

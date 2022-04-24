@@ -127,7 +127,10 @@ def get_all(req: Request,
     """
     filters = []
     search_filters = []
+    print(req.token, '<<<------ TOKEN')
+    print(req.user_id, '<<<------ USER ID')
     current_user = fetch_users_service(req.token, req.user_id)
+    print(current_user, '<<<--- Resultante de usuario post validación de auth/me (NODE JS)')
     user_role = current_user["role"]["key"]
     if user_id and user_role == "SOCIAL_ASSISTANCE":
         filters.append(Visit.assigned_id == user_id)
