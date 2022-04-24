@@ -43,6 +43,7 @@ def fetch_users_service(token: str, user_id: int) -> str:
     print(user_req, '<<<--- USUARIO OBTENIDO DE AUTH SERVICE')
     result = handle_response(user_req)
 
+    print(result, "<<<--- Data sin parsear ni nada, en duro")
     print(result["paternal_surname"], '<<<--- Apellido paterno resultante.')
     print(result["maternal_surname"], '<<<--- Apellido materno resultante.')
     return {**result,
