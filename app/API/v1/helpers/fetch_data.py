@@ -11,7 +11,7 @@ def handle_response(result, endpoint=None) -> object:
     print(result, '<<<--- Resultado de la consulta a AUTH')
     if(result.status == 200):
         print(result.status, '<<<--- Estatus de la respuesta.')
-        print(result.data, '<<<--- Datos en la respuesta.')
+        print(result.data[0], '<<<--- Datos en la respuesta.')
         return json.loads(result.data[0])
     raise HTTPException(status_code=400, detail="Error al obtener datos")
 
