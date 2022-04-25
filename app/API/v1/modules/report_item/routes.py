@@ -41,6 +41,7 @@ def create(request: Request, body:  ReportCategoryCreate, db: Session = Depends(
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
+    db.close()
 
     return db_item
 
@@ -70,6 +71,7 @@ def update_one(id: int, body:  ReportCategoryCreate, db: Session = Depends(get_d
     db.add(updated_item)
     db.commit()
     db.refresh(updated_item)
+    db.close()
 
     return updated_item
 
@@ -97,6 +99,7 @@ def delete_one(id: int, db: Session = Depends(get_database)):
     db.add(found_item)
     db.commit()
     db.refresh(found_item)
+    db.close()
 
     return {"message": "Item eliminado"}
 
@@ -108,5 +111,6 @@ def seed_items(request: Request, db: Session = Depends(get_database)):
     ---
     """
     seed_report_items(db, request.user_id)
+    db.close()
 
     return {"message": "Datos creados"}

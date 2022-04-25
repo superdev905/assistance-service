@@ -24,5 +24,5 @@ def get_all(employee_id: Optional[int] = None,
     if employee_id:
         filters.append(Attachment.data_id == employee_id)
         filters.append(Attachment.source_system == "TRABAJADORES")
-
+    db.close()
     return db.query(Attachment).filter(*filters).all()

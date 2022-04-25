@@ -75,6 +75,7 @@ def get_all(visit_id: Optional[int] = None,
         result_list.append({"employee_id": employee.employee_id, "employee_run": employee.run,
                            "employee_fullname": employee.names + " " + employee.lastname, **emp, "tag": "A"})
 
+    db.close()
     return {"items": result_list}
 
 
@@ -103,6 +104,7 @@ def get_one(req: Request,
                     temp_item["tag"] = "N"
                     temp_item["is_old"] = False
             result.append(temp_item)
+    db.close()
     return result
 
 
@@ -123,6 +125,8 @@ def get_attended_list(visit_id: int = None,
         filters.append(Assistance.case_id == social_case_id)
     list = db.query(Assistance).filter(
         and_(*filters)).order_by(Assistance.created_at.desc()).all()
+
+    db.close()
     return list
 
 
@@ -134,6 +138,7 @@ def get_attended_list(business_id: int = None,
     filters.append(Assistance.business_id == business_id)
     query = db.query(Assistance).filter(
         and_(*filters)).order_by(Assistance.created_at.desc()).options(joinedload(Assistance.visit))
+    db.close()
     return paginate(query, params)
 
 
@@ -166,6 +171,7 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
                                 "areas",
                                 found_event.area_id)
 
+    db.close()
     return {**found_event.__dict__,
             "management": management,
             "topic": topic,
@@ -193,6 +199,7 @@ def create_one(req: Request, obj_in: AssistanceCreate, db: Session = Depends(get
 
     get_attention_tracking_by_employee(req, db, obj_in.employee_id)
 
+    db.close()
     return {**saved_assistance.__dict__,
             "id": saved_assistance.id}
 
@@ -225,6 +232,7 @@ def update_one(id: int,
     db.add(found_event)
     db.commit()
     db.refresh(found_event)
+    db.close()
     return found_event
 
 
@@ -256,6 +264,7 @@ def patch_one(id: int,
     db.add(found_event)
     db.commit()
     db.refresh(found_event)
+    db.close()
     return found_event
 
 
@@ -278,4 +287,5 @@ def delete_one(req: Request,  id: int,  db: Session = Depends(get_database)):
 
     get_attention_tracking_by_employee(req, db, event.employee_id)
 
+    db.close()
     return {"message": "Asistencia eliminada"}

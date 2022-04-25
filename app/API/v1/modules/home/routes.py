@@ -47,6 +47,7 @@ def get_last_five_visits(req: Request,  db: Session = Depends(get_database)):
         result.append({**doc.__dict__, "assigned": assigned,
                       "type_name": "VISITA"})
 
+    db.close()
     return result
 
 
@@ -76,7 +77,8 @@ def get_last_five_visits(req: Request,  db: Session = Depends(get_database)):
                 management_name = i["name"]
         result.append({**doc.__dict__, "assistance": user,
                       "management_name": management_name})
-
+    
+    db.close()
     return result
 
 
@@ -114,4 +116,5 @@ def get_last_five_visits(req: Request,  db: Session = Depends(get_database)):
                        "assistance": user,
                       "activity": activity})
 
+    db.close()
     return result

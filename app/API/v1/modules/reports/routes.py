@@ -63,9 +63,11 @@ def generate_visit_report(req: Request, range: ReportVisitDateRange, db: Session
     
     if(exists(result)):
         buffer_export = generate_visits_excel(req, result, start, end)
+        db.close()
         return StreamingResponse(buffer_export, headers=headers)
     else:
         buffer_export = generate_visits_excel(req, [], start, end)
+        db.close()
         return StreamingResponse(buffer_export, headers=headers)
 
 @router.post("/visit-by-company",)
@@ -111,6 +113,7 @@ def generate_visit_by_company_report(req: Request, schema: ReportbyIdAndDateRang
             'Content-Disposition': f"attachment; filename={file_name}.xlsx"
         }
         buffer_export = generate_visits_by_company_excel(req, result, company_name, start_, end_)
+        db.close()
         return StreamingResponse(buffer_export, headers=headers)
     else:
         file_name = f"Visitas_Empresa_SIN_REGISTROS"
@@ -118,6 +121,7 @@ def generate_visit_by_company_report(req: Request, schema: ReportbyIdAndDateRang
             'Content-Disposition': f"attachment; filename={file_name}.xlsx"
         }
         buffer_export = generate_visits_by_company_excel(req, [], 'SIN_REGISTROS', start_, end_)
+        db.close()
         return StreamingResponse(buffer_export, headers=headers)
 
 @router.post("/visit-by-assigned",)
@@ -159,6 +163,7 @@ def generate_visit_by_assigned_report(req: Request, schema: ReportbyIdAndDateRan
             'Content-Disposition': f"attachment; filename={file_name}.xlsx"
         }
         buffer_export = generate_visits_by_assigned_excel(req, result, start_, end_)
+        db.close()
         return StreamingResponse(buffer_export, headers=headers)
     else:
         file_name = f"Visitas_Profesional_id_SIN_REGISTROS"
@@ -166,6 +171,7 @@ def generate_visit_by_assigned_report(req: Request, schema: ReportbyIdAndDateRan
             'Content-Disposition': f"attachment; filename={file_name}.xlsx"
         }
         buffer_export = generate_visits_by_assigned_excel(req, [], start_, end_)
+        db.close()
         return StreamingResponse(buffer_export, headers=headers)
 
 @router.post("/assistance-employee",)
@@ -205,6 +211,7 @@ def generate_assistance_by_employee_report(req: Request, schema: ReportbyIdAndDa
 
         buffer_export = generate_assistance_by_employee_excel(req, result, rut_employee, start_, end_)
 
+        db.close()
         return StreamingResponse(buffer_export, headers=headers)
     else:
         rut_employee = 'SIN_REGISTROS'
@@ -215,6 +222,7 @@ def generate_assistance_by_employee_report(req: Request, schema: ReportbyIdAndDa
 
         buffer_export = generate_assistance_by_employee_excel(req, [], rut_employee, start_, end_)
 
+        db.close()
         return StreamingResponse(buffer_export, headers=headers)
 
 @router.post("/assistance-company",)
@@ -254,6 +262,7 @@ def generate_assistance_by_company_report(req: Request, schema: ReportbyIdAndDat
         }
         buffer_export = generate_assistance_by_company_excel(req, result, company_name, start_, end_)
 
+        db.close()
         return StreamingResponse(buffer_export, headers=headers)
     else:
         company_name = 'SIN_REGISTROS'
@@ -263,4 +272,5 @@ def generate_assistance_by_company_report(req: Request, schema: ReportbyIdAndDat
         }
         buffer_export = generate_assistance_by_company_excel(req, [], company_name, start_, end_)
 
+        db.close()
         return StreamingResponse(buffer_export, headers=headers)

@@ -31,5 +31,5 @@ def overloaded_get_all(skip: int = None,
     filters = []
     if visit_id:
         filters.append(AssistanceConstruction.visit_id == visit_id)
-
+    db.close()
     return db.query(AssistanceConstruction).filter(*filters).offset(skip).limit(limit).all()

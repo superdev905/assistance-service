@@ -58,6 +58,7 @@ def get_calendar_stats(req: Request,
     for doc in docs:
         result.append({"label": doc.status, "value": doc.value})
 
+    db.close()
     return result
 
 
@@ -105,6 +106,8 @@ def get_calendar_events(req: Request,
              "is_owner": get_owner_status(user_role, visit.assigned_id, req.user_id),
              "assigned": fetch_users_service(req.token, visit.assigned_id)
              })
+
+    db.close()
     return items
 
 
@@ -171,6 +174,7 @@ def get_all(search: Optional[str] = None,
             Visit.status != "CANCELADA")
     ).order_by(Visit.start_date), params)
 
+    db.close()
     return visits_list
 
 
@@ -229,6 +233,7 @@ def get_one(req: Request, id: int, db: Session = Depends(get_database)):
 
     print("Hora =", current_time)
 
+    db.close()
     return {**visit.__dict__,
             "shift": shift,
             "bussiness": format_business_details(bussiness),
@@ -257,6 +262,7 @@ def get_one_statistics(id: int, db: Session = Depends(get_database)):
 
         result.append({**i.__dict__, "value": total})
 
+    db.close()
     return result
 
 
@@ -286,6 +292,7 @@ def get_one_statistics(req: Request,
         else:
             total_house += 1
 
+    db.close()
     return {"total": total, "new": 0, "old": total, "house": total_house, "subcontract": total_sub_contract}
 
 
@@ -309,6 +316,7 @@ def set_workers(id: int, body: VisitWorkers, db: Session = Depends(get_database)
     db.commit()
     db.refresh(visit)
 
+    db.close()
     return visit
 
 
@@ -331,6 +339,7 @@ def create_report(id: int,  db: Session = Depends(get_database)):
     }
     buffer_export = generate_to_attend_employees_excel(visit.id)
 
+    db.close()
     return StreamingResponse(buffer_export, headers=headers)
 
 
@@ -349,6 +358,7 @@ def create_report(req: Request, id: int, report_in: VisitReportSchema, db: Sessi
 
     generate_visit_report(db, id, report_in, req)
 
+    db.close()
     return {"message": "Reporte creado"}
 
 
@@ -384,6 +394,7 @@ def update_report(req: Request, id: int, report_in: VisitReportSchema, db: Sessi
 
     generate_visit_report(db, id, report_in, req)
 
+    db.close()
     return {"message": "Reporte actualizado"}
 
 
@@ -400,6 +411,7 @@ def create_one(obj_in: VisitCreate, db: Session = Depends(get_database)):
     db.add(saved_event)
     db.commit()
     db.refresh(saved_event)
+    db.close()
     return saved_event
 
 
@@ -429,6 +441,7 @@ def export_visits(req: Request, body: VisitsExport, db: Session = Depends(get_da
     buffer_export = generate_visits_excel(
         req, formatted_visits, body.start_date, body.end_date)
 
+    db.close()
     return StreamingResponse(buffer_export, headers=headers)
 
 
@@ -460,6 +473,7 @@ def update_one(id: int, update_body: VisitCreate, db: Session = Depends(get_data
     db.add(found_event)
     db.commit()
     db.refresh(found_event)
+    db.close()
     return found_event
 
 
@@ -489,6 +503,7 @@ def patch_one(id: int, patch_body: VisitPatchSchema, db: Session = Depends(get_d
     db.add(found_event)
     db.commit()
     db.refresh(found_event)
+    db.close()
     return found_event
 
 
@@ -508,6 +523,7 @@ def delete_one(id: int,  db: Session = Depends(get_database)):
 
     db.delete(event)
     db.commit()
+    db.close()
     return {"message": "Evento eliminado"}
 
 
@@ -537,6 +553,7 @@ def request_close_visit(id: int, db: Session = Depends(get_database)):
     db.add(visit)
     db.commit()
     db.flush(visit)
+    db.close()
     return {"message": "Cierre solicitado"}
 
 
@@ -576,4 +593,5 @@ def close_one_visit(req: Request, id: int, body: VisitCloseSchema,  db: Session 
     db.add(visit)
     db.commit()
     db.flush(visit)
+    db.close()
     return {"message": "Visita cerrada"}
