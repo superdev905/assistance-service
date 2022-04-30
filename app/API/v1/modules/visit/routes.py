@@ -152,7 +152,9 @@ def get_all(req: Request,
 @router.get("/request-close")
 def get_all(search: Optional[str] = None,
             db: Session = Depends(get_database),
-            params: PaginationParams = Depends()):
+            params: PaginationParams = Depends(),
+            user_id: Optional[int] = None,
+            role: Optional[str] = None):
     """
     Retorna la lista de visitas por cerrar
     ---
@@ -167,12 +169,21 @@ def get_all(search: Optional[str] = None,
         search_filters.append(Visit.business_name.ilike(formatted_search))
         search_filters.append(
             Visit.construction_name.ilike(formatted_search))
-    visits_list = paginate(db.query(Visit).filter(
-        and_(
-            or_(*search_filters),
-            Visit.is_close_pending == True,
-            Visit.status != "CANCELADA")
-    ).order_by(Visit.start_date), params)
+    if role == 'ADMIN':
+        visits_list = paginate(db.query(Visit).filter(
+            and_(
+                or_(*search_filters),
+                Visit.is_close_pending == True,
+                Visit.status != "CANCELADA")
+        ).order_by(Visit.start_date), params)
+    else :
+        visits_list = paginate(db.query(Visit).filter(
+            and_(
+                or_(*search_filters),
+                Visit.assigned_id == user_id,
+                Visit.is_close_pending == True,
+                Visit.status != "CANCELADA")
+        ).order_by(Visit.start_date), params)
 
     db.close()
     return visits_list
