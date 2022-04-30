@@ -14,6 +14,6 @@ docker push cchcdev.azurecr.io/assistance-service:latest
 # workaround on azure acr login failed
 #az acr login --name  cchcdev 
 #azure context
-docker context use azurecontext
+docker context use azuretest2
 #deploying on azure
 docker compose --file docker-compose.azure.yml up --build
