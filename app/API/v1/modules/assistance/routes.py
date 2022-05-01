@@ -35,21 +35,6 @@ def get_all(visit_id: Optional[int] = None,
     - **visit_id**: Id de visita
     """
 
-    items = [{"name": "SALUD", "short": "S"},
-             {"name": "INCORPORACION", "short": "IN"},
-             {"name": "FINIQUITADO", "short": "FN"},
-             {"name": "DEUDA / AHORRO", "short": "D"},
-             {"name": "FAMILIA", "short": "F"},
-             {"name": "EDUCACIÓN", "short": "E"},
-             {"name": "LEGAL", "short": "L"},
-             {"name": "FUNDACION RECONOCER", "short": "FR"},
-             {"name": "ATENCIÓN INDIVIDUAL", "short": "AI"},
-             {"name": "ATENCION GRUPAL", "short": "AG"},
-             {"name": "PREVISIÓN", "short": "P"},
-             {"name": "VIVIENDA", "short": "V"},
-             {"name": "PROYECTOS SOCIALES", "short": "PS"},
-             {"name": "BENEFICIOS DE EMPRESA", "short": "B"}]
-
     result_list = []
 
     group_by_employee = db.query(Assistance.employee_id.label("employee_id"),
@@ -57,26 +42,14 @@ def get_all(visit_id: Optional[int] = None,
                                  Assistance.employee_name.label("names"),
                                  Assistance.employee_lastname.label(
                                      "lastname"),
+                                 Assistance.area_name.label('area'),
                                  func.count(Assistance.employee_id).label("times")).filter(Assistance.visit_id == visit_id).group_by(
-        Assistance.employee_id, Assistance.employee_name, Assistance.employee_lastname, Assistance.employee_rut).all()
+        Assistance.employee_id, Assistance.employee_name, Assistance.employee_lastname, Assistance.employee_rut, Assistance.area_name).all()
 
-    for employee in group_by_employee:
-        emp = {}
-        list = []
-        for i in items:
-
-            total_by_item = db.query(Assistance).filter(and_(
-                Assistance.employee_id == employee.employee_id, Assistance.area_name.ilike(i[
-                    "name"]),
-                Assistance.visit_id == visit_id)).all()
-            list.append({**i, "total": len(total_by_item)})
-            emp[i["short"]] = len(total_by_item)
-
-        result_list.append({"employee_id": employee.employee_id, "employee_run": employee.run,
-                           "employee_fullname": employee.names + " " + employee.lastname, **emp, "tag": "A"})
+    result_list.append(group_by_employee)
 
     db.close()
-    return {"items": result_list}
+    return result_list
 
 
 @router.get("/search")
