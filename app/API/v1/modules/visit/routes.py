@@ -291,20 +291,24 @@ def get_one_statistics(req: Request,
     total = len(db.query(Assistance).filter(Assistance.visit_id == id).all())
     total_house = 0
     total_sub_contract = 0
+    old = 0
+    new = 0
     docs = db.query(Assistance).filter(Assistance.visit_id == id).all()
 
     for i in docs:
         employee = get_employee_data(req, i.employee_id)
         if employee["current_job"]:
+            old += 1
             if employee["current_job"]["contract_type"] == "SUB CONTRATO":
                 total_sub_contract += 1
             else:
                 total_house += 1
         else:
+            new += 1
             total_house += 1
 
     db.close()
-    return {"total": total, "new": 0, "old": total, "house": total_house, "subcontract": total_sub_contract}
+    return {"total": total, "new": new, "old": old, "house": total_house, "subcontract": total_sub_contract}
 
 
 @router.post("/{id}/workers")
