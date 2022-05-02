@@ -36,7 +36,6 @@ class AssistanceCreate(BaseModel):
     attended_id: int
     attended_name: str
     is_attended_relative: bool
-    employee_construction_id: Optional[int]
 
     class Config:
         orm_mode = True
@@ -68,8 +67,7 @@ class AssistanceCreate(BaseModel):
                 "attached_url": "",
                 "observation": "Observation",
                 "created_by": 1,
-                "assigned_id":  1,
-                "employee_construction_id": 1
+                "assigned_id":  1
             }
         }
 
