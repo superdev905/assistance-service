@@ -43,6 +43,7 @@ class Assistance(Base):
                         nullable=False, server_default=func.now())
     update_at = Column(DateTime(timezone=True),
                        server_default=func.now(), onupdate=func.now())
+    employee_company_id = Column(Integer, nullable=True)
 
     visit = relationship("Visit", uselist=False)
     attachments = relationship(
