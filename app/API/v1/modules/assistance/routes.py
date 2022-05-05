@@ -115,6 +115,18 @@ def get_attended_list(business_id: int = None,
     db.close()
     return paginate(query, params)
 
+@router.get("/business-construction")
+def get_attended_list(business_id: int = None,
+                      construction_id: int = None,
+                      db: Session = Depends(get_database),
+                      params: PaginationParams = Depends()):
+    filters = []
+    filters.append(and_(Assistance.business_id == business_id, Assistance.construction_id == construction_id))
+    query = db.query(Assistance).filter(
+        and_(*filters)).order_by(Assistance.created_at.desc()).options(joinedload(Assistance.visit))
+    db.close()
+    return paginate(query, params)
+
 
 @router.get("/{id}", response_model=AssistanceDetails)
 def get_one(req: Request, id: int, db: Session = Depends(get_database)):
