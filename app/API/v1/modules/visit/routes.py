@@ -301,7 +301,7 @@ def get_one_statistics(req: Request,
             old += 1
             if employee["current_job"]["contract_type"] == "SUB CONTRATO":
                 total_sub_contract += 1
-            if employee["current_job"]["contract_type"] == "CASA":
+            if employee["current_job"]["contract_type"] == "EMPRESA":
                 total_house += 1
         else:
             new += 1
