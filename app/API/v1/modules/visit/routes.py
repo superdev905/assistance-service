@@ -288,12 +288,12 @@ def get_one_statistics(req: Request,
 
     """
 
-    total = len(db.query(Assistance).filter(Assistance.visit_id == id).all())
+    total = len(db.query(Assistance.employee_id.label('employee_id')).filter(Assistance.visit_id == id).group_by(Assistance.employee_id).all())
     total_house = 0
     total_sub_contract = 0
     old = 0
     new = 0
-    docs = db.query(Assistance).filter(Assistance.visit_id == id).all()
+    docs = db.query(Assistance.employee_id.label('employee_id')).filter(Assistance.visit_id == id).group_by(Assistance.employee_id).all()
 
     for i in docs:
         employee = get_employee_data(req, i.employee_id)
@@ -301,11 +301,10 @@ def get_one_statistics(req: Request,
             old += 1
             if employee["current_job"]["contract_type"] == "SUB CONTRATO":
                 total_sub_contract += 1
-            else:
+            if employee["current_job"]["contract_type"] == "CASA":
                 total_house += 1
         else:
             new += 1
-            total_house += 1
 
     db.close()
     return {"total": total, "new": new, "old": old, "house": total_house, "subcontract": total_sub_contract}
