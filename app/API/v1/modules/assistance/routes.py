@@ -130,11 +130,15 @@ def get_attended_list(business_id: int = None,
 @router.get("/business-history")
 def get_attended_list(business_id: int = None,
                       construction_id: int = None,
+                      visit_id: int = None,
                       db: Session = Depends(get_database)):
     filters = []
-    filters.append(and_(Assistance.business_id == business_id, Assistance.construction_id != construction_id))
-    query = db.query(Assistance).filter(
-        and_(*filters)).order_by(Assistance.created_at.desc()).options(joinedload(Assistance.visit)).all()
+    filters.append(and_(Assistance.business_id == business_id, Assistance.construction_id == construction_id, Assistance.visit_id != visit_id))
+    query = db.query(Assistance.employee_id.label('employee_id'),
+                     Assistance.employee_name.label('employee_name'),
+                     Assistance.employee_lastname.label('employee_lastname'),
+                     Assistance.employee_rut.label('employee_rut')).filter(
+        and_(*filters)).group_by(Assistance.employee_id, Assistance.employee_name, Assistance.employee_lastname, Assistance.employee_rut).all()
     result = query
     db.close()
     return jsonable_encoder(result)
