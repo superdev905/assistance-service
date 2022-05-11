@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import List, Optional
 from fastapi import status, APIRouter, Request, Query
 from fastapi.encoders import jsonable_encoder
@@ -20,6 +20,10 @@ from ..report_item.model import VisitReportItem
 from .model import Visit, VisitReport, VisitRevision
 from .schema import VisitCalendarItem, VisitCloseSchema, VisitCreate, VisitPatchSchema, VisitReportSchema, VisitWorkers, VisitsExport
 from .services import close_visit, format_business_details, format_construction_details, generate_to_attend_employees_excel, generate_visit_report, get_blocked_status, generate_visits_excel, get_owner_status
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+import smtplib
 
 router = APIRouter(
     prefix="/visits", tags=["Visitas"], dependencies=[Depends(JWTBearer())])
@@ -609,3 +613,29 @@ def close_one_visit(req: Request, id: int, body: VisitCloseSchema,  db: Session 
     db.flush(visit)
     db.close()
     return {"message": "Visita cerrada"}
+
+@router.post("/mail")
+def send_report_mail(to: list, url: str, visit_id: int, construction_name: str, date: date, assistant_name: str):
+    # create message object instance
+    msg = MIMEMultipart('alternative')
+    # setup the parameters of the message
+    password = "u8m7&KNJ4"
+    msg['From'] = "envio@fundacioncchc.cl"
+    msg['To'] = ','.join(to)
+    msg['Subject'] = f"Envío cierre visita {visit_id}"
+    text = MIMEText(f"Estimados, \n\nAdjunto reporte de cierre de la visita {visit_id} asociado a la obra {construction_name} del día {date} \n\n{url} \n\nSaludos cordiales \n\n{assistant_name}")
+    msg.attach(text)
+
+    # create server
+    server = smtplib.SMTP('smtp.gmail.com: 587')
+    server.starttls()
+    
+    # Login Credentials for sending the mail
+    server.login(msg['From'], password)
+
+    # send the message via the server.
+    server.sendmail(msg['From'], to, msg.as_string())
+
+    server.quit()
+    
+    print("successfully sent email to: ", msg['To'])
