@@ -170,8 +170,8 @@ def create_report_items(db: Session, items: List, report_id: int, user_id: int):
 def generate_report_and_upload(db: Session, visit_id: int, body: VisitReportSchema, token: str):
     visit = db.query(Visit).filter(Visit.id == visit_id).first()
     total_formatted = ""
-    total_assistance = len(db.query(Assistance).filter(
-        Assistance.visit_id == visit_id).all())
+    total_assistance = len(db.query(Assistance.employee_id.label('employee_id')).filter(
+        Assistance.visit_id == visit_id).group_by(Assistance.employee_id).all())
     if(total_assistance > 0):
         total_formatted = str(total_assistance) + \
             " personas" if total_assistance > 1 else "1 persona"
