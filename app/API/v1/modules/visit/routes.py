@@ -567,6 +567,7 @@ def request_close_visit(id: int, db: Session = Depends(get_database)):
             status_code=400, detail="El cierre de esta visita ya fue solicitada")
 
     visit.is_close_pending = True
+    visit.status = "TERMINADA"
 
     db.add(visit)
     db.commit()
@@ -615,7 +616,7 @@ def close_one_visit(req: Request, id: int, body: VisitCloseSchema,  db: Session 
     return {"message": "Visita cerrada"}
 
 @router.post("/mail")
-def send_report_mail(to: list, url: str, visit_id: int, construction_name: str, date: date, assistant_name: str):
+def send_report_mail(to: list, url: str, visit_id: int, business_name: str, construction_name: str, date: date, assistant_name: str):
     # create message object instance
     msg = MIMEMultipart('alternative')
     # setup the parameters of the message
@@ -623,8 +624,23 @@ def send_report_mail(to: list, url: str, visit_id: int, construction_name: str, 
     msg['From'] = "envio@fundacioncchc.cl"
     msg['To'] = ','.join(to)
     msg['Subject'] = f"Envío cierre visita {visit_id}"
-    text = MIMEText(f"Estimados, \n\nAdjunto reporte de cierre de la visita {visit_id} asociado a la obra {construction_name} del día {date} \n\n{url} \n\nSaludos cordiales \n\n{assistant_name}")
-    msg.attach(text)
+    html = f"""
+    <html>
+        <head></head>
+        <body>
+            <p>Estimado(a).</p>
+            <p>La fundación Social de la CChC informa a UD. que se ha finalizado exitosamente la visita de Servicio Social para la empresa <b>{business_name}</b> obra <b>{construction_name}</b> del día <b>{date.strftime('%d-%m-%Y')}</b>. Podrá descargar el reporte de la visita con la información relevante en el siguiente link:<br/><br/>
+
+            <p><a href={url}>Descargar Informe</a></p><br/>
+
+            <div>Saludos coriales,</div>
+            <div>{assistant_name}</div>
+            <div>Fundación Social CChC</div>
+        </body>
+    </html>
+    """
+    part2 = MIMEText(html, 'html')
+    msg.attach(part2)
 
     # create server
     server = smtplib.SMTP('smtp.gmail.com: 587')
