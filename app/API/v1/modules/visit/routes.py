@@ -616,13 +616,15 @@ def close_one_visit(req: Request, id: int, body: VisitCloseSchema,  db: Session 
     return {"message": "Visita cerrada"}
 
 @router.post("/mail")
-def send_report_mail(to: list, url: str, visit_id: int, business_name: str, construction_name: str, date: date, assistant_name: str):
+def send_report_mail(to: list, url: str, visit_id: int, business_name: str, construction_name: str, date: date, assistant_name: str, bccBoss: list):
     # create message object instance
     msg = MIMEMultipart('alternative')
     # setup the parameters of the message
     password = "u8m7&KNJ4"
-    msg['From'] = "envio@fundacioncchc.cl"
+    msg['From'] = "fundacionsocialcchc@fundacioncchc.cl"
     msg['To'] = ','.join(to)
+    if(bccBoss and len(bccBoss) > 0):
+        msg['Cc'] = ','.join(bccBoss)
     msg['Subject'] = f"Envío cierre visita {visit_id}"
     html = f"""
     <html>
@@ -654,4 +656,4 @@ def send_report_mail(to: list, url: str, visit_id: int, business_name: str, cons
 
     server.quit()
     
-    print("successfully sent email to: ", msg['To'])
+    print("successfully sent email to: ", msg['To'], msg["Cc"])
