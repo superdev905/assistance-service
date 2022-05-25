@@ -635,7 +635,7 @@ def send_report_mail(to: list, url: str, visit_id: int, business_name: str, cons
 
             <p><a href={url}>Descargar Informe</a></p><br/>
 
-            <div>Saludos coriales,</div>
+            <div>Saludos cordiales,</div>
             <div>{assistant_name}</div>
             <div>Fundación Social CChC</div>
         </body>
