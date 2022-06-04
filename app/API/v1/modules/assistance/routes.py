@@ -44,8 +44,9 @@ def get_all(visit_id: Optional[int] = None,
                                      "lastname"),
                                  Assistance.area_name.label('area'),
                                  Assistance.construction_id.label('obraId'),
+                                 Assistance.created_at.label('created_at'),
                                  func.count(Assistance.employee_id).label("times")).filter(Assistance.visit_id == visit_id).group_by(
-        Assistance.employee_id, Assistance.employee_name, Assistance.employee_lastname, Assistance.employee_rut, Assistance.area_name, Assistance.construction_id).all()
+        Assistance.employee_id, Assistance.employee_name, Assistance.employee_lastname, Assistance.employee_rut, Assistance.area_name, Assistance.construction_id, Assistance.created_at).all()
 
     result_list.append(group_by_employee)
 
