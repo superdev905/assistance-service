@@ -47,7 +47,7 @@ def create_visit_report(token: str, data):
         date_string + " a la obra " + \
         data["construction_name"] + \
         " por " + data["user"] + \
-        " , profesional de atencién en obra de la Fundacion Social C.Ch.C.."
+        " , profesional de atención en obra de la Fundación Social C.Ch.C.."
     sub_intro = "En la ocasión se obtuvo el siguiente resultado:"
     table_data = []
     table_style = [('GRID', (0, 0), (-1, -1), 0.5, colors.black, ),
