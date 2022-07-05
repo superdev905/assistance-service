@@ -53,6 +53,26 @@ def get_all(visit_id: Optional[int] = None,
     db.close()
     return result_list
 
+@router.get("/report")
+def get_all(visit_id: Optional[int] = None,
+            db: Session = Depends(get_database)):
+    """
+    Retorna la lista de asistencias por cada usuario para el reporte
+    ---
+    Parametros:
+
+    - **visit_id**: Id de visita
+    """
+
+    result_list = []
+
+    listado_atenciones = db.query(Assistance).filter(Assistance.visit_id == visit_id).all()
+
+    result_list.append(listado_atenciones)
+
+    db.close()
+    return result_list
+
 
 @router.get("/search")
 def get_one(req: Request,
