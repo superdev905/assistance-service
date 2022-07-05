@@ -1,3 +1,4 @@
+from array import array
 from datetime import date, datetime
 from typing import List, Optional
 from fastapi import status, APIRouter, Request, Query
@@ -151,6 +152,23 @@ def get_all(req: Request,
     
     db.close()
     return visits_list
+
+@router.get("/report-visits/{companyId}")
+def get_all_visits(companyId: int,
+                   start_date: datetime,
+                   end_date: datetime,
+                   db: Session = Depends(get_database)):
+    """
+    Retorna la lista de visitas para generar reporte mensual
+    ---
+    Parametros:
+    - **companyId**: ID de la compañía a la que se genera el reporte
+    - **start_date**: Fecha inicial para búsqueda
+    - **end_date**: Fecha final para búsqueda
+    """
+    visit_list = db.query(Visit).filter(and_(Visit.business_id == companyId, func.DATE(Visit.start_date) >= start_date, func.DATE(Visit.end_date) <= end_date)).all()
+    result = jsonable_encoder(visit_list)
+    return result
 
 
 @router.get("/request-close")

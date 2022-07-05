@@ -12,8 +12,8 @@ docker tag assistance-service_assistance-api-test cchcdev.azurecr.io/assistance-
 # pushing image
 docker push cchcdev.azurecr.io/assistance-service:latest
 # workaround on azure acr login failed
-#az acr login --name  cchcdev 
+#az acr login --name  cchcdev
 #azure context
-docker context use azuretest2
+docker context use azuretest1
 #deploying on azure
 docker compose --file docker-compose.azure.yml up --build
