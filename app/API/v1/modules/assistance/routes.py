@@ -1,5 +1,3 @@
-from pkgutil import get_data
-import re
 from typing import Optional
 from fastapi import status, APIRouter, Request, Query
 from fastapi.encoders import jsonable_encoder
@@ -337,10 +335,13 @@ def get_assistance(body: AssistanceReport, db: Session = Depends(get_database)):
         {"name": "SALUD", "total": 0},
         {"name": "VIVIENDA", "total": 0},
     ]
+
+    topicIds = []
     assistances = db.query(Assistance).filter(Assistance.visit_id.in_((body.visit_id))).all()
     for obj in assistances:
+        topicIds.append(obj.topic_id)
         for area in result:
             if(area["name"] == obj.area_name):
                 area["total"] = area["total"] + 1
 
-    return result
+    return {"result": result, "topicIds": topicIds}
