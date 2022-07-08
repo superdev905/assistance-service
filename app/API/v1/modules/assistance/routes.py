@@ -321,9 +321,26 @@ def get_assistance(body: AssistanceReport, db: Session = Depends(get_database)):
     Obtiene listado de asistencia para reporte
     """
 
-    result = []
+    result = [
+        {"name": "ATENCION GRUPAL", "total": 0},
+        {"name": "ATENCIÓN INDIVIDUAL", "total": 0},
+        {"name": "BENEFICIOS DE EMPRESA", "total": 0},
+        {"name": "DEUDA / AHORRO", "total": 0},
+        {"name": "EDUCACIÓN", "total": 0},
+        {"name": "FAMILIA", "total": 0},
+        {"name": "FINIQUITADO", "total": 0},
+        {"name": "FUNDACION RECONOCER", "total": 0},
+        {"name": "INCORPORACION", "total": 0},
+        {"name": "LEGAL", "total": 0},
+        {"name": "PREVISIÓN", "total": 0},
+        {"name": "PROYECTOS SOCIALES", "total": 0},
+        {"name": "SALUD", "total": 0},
+        {"name": "VIVIENDA", "total": 0},
+    ]
     assistances = db.query(Assistance).filter(Assistance.visit_id.in_((body.visit_id))).all()
     for obj in assistances:
-        result.append(obj.area_name)
+        for area in result:
+            if(area["name"] == obj.area_name):
+                area["total"] = area["total"] + 1
 
     return result
