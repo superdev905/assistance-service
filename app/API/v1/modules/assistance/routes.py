@@ -1,3 +1,5 @@
+from pkgutil import get_data
+import re
 from typing import Optional
 from fastapi import status, APIRouter, Request, Query
 from fastapi.encoders import jsonable_encoder
@@ -16,7 +18,7 @@ from ...middlewares.auth import JWTBearer
 from ..attachment.services import save_attachment
 from .services import get_attention_tracking_by_employee, search_employees
 from .model import Assistance
-from .schema import AssistanceCreate, AssistanceDetails, AssistancePatchSchema
+from .schema import AssistanceCreate, AssistanceDetails, AssistancePatchSchema, AssistanceReport
 
 
 router = APIRouter(prefix="/assistance",
@@ -312,3 +314,16 @@ def delete_one(req: Request,  id: int,  db: Session = Depends(get_database)):
 
     db.close()
     return {"message": "Asistencia eliminada"}
+
+@router.post("/get-assistance-report")
+def get_assistance(body: AssistanceReport, db: Session = Depends(get_database)):
+    """
+    Obtiene listado de asistencia para reporte
+    """
+
+    result = []
+    assistances = db.query(Assistance).filter(Assistance.visit_id.in_((body.visit_id))).all()
+    for obj in assistances:
+        result.append(obj.area_name)
+
+    return result

@@ -121,3 +121,6 @@ class AssistanceDetails(AssistanceCreate):
 
     class Config:
         allow_population_by_field_name = True
+
+class AssistanceReport(BaseModel):
+    visit_id: List[int]
