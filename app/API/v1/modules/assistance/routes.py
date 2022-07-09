@@ -336,6 +336,7 @@ def get_assistance(body: AssistanceReport, db: Session = Depends(get_database)):
         {"name": "VIVIENDA", "total": 0, "area_id": 3},
     ]
     topic_id_terreno = []
+    management_id_terreno = []
     oficina = [
         {"name": "ATENCION GRUPAL", "total": 0, "area_id": 11},
         {"name": "ATENCIÓN INDIVIDUAL", "total": 0, "area_id": 10},
@@ -353,18 +354,28 @@ def get_assistance(body: AssistanceReport, db: Session = Depends(get_database)):
         {"name": "VIVIENDA", "total": 0, "area_id": 3},
     ]
     topic_id_oficina = []
+    management_id_oficina = []
 
     assistances = db.query(Assistance).filter(Assistance.visit_id.in_((body.visit_id))).all()
     for obj in assistances:
         if obj.attention_place == 'TERRENO':
             topic_id_terreno.append(obj.topic_id)
+            management_id_terreno.append(obj.management_id)
             for area_terreno in terreno:
                 if area_terreno["name"] == obj.area_name:
                     area_terreno["total"] = area_terreno["total"] + 1
         else:
             topic_id_oficina.append(obj.topic_id)
+            management_id_oficina.append(obj.management_id)
             for area_oficina in oficina:
                 if area_oficina["name"] == obj.area_name:
                     area_oficina["total"] = area_oficina["total"] +1
 
-    return {"terreno": terreno, "topic_ids_terreno": topic_id_terreno, "oficina": oficina, "topic_ids_oficina": topic_id_oficina}
+    return {
+        "terreno": terreno,
+        "topic_ids_terreno": topic_id_terreno,
+        "management_id_terreno": management_id_terreno, 
+        "oficina": oficina, 
+        "topic_ids_oficina": topic_id_oficina, 
+        "management_id_oficina": management_id_oficina,
+        }
