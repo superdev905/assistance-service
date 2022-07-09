@@ -319,29 +319,52 @@ def get_assistance(body: AssistanceReport, db: Session = Depends(get_database)):
     Obtiene listado de asistencia para reporte
     """
 
-    result = [
-        {"name": "ATENCION GRUPAL", "total": 0},
-        {"name": "ATENCIÓN INDIVIDUAL", "total": 0},
-        {"name": "BENEFICIOS DE EMPRESA", "total": 0},
-        {"name": "DEUDA / AHORRO", "total": 0},
-        {"name": "EDUCACIÓN", "total": 0},
-        {"name": "FAMILIA", "total": 0},
-        {"name": "FINIQUITADO", "total": 0},
-        {"name": "FUNDACION RECONOCER", "total": 0},
-        {"name": "INCORPORACION", "total": 0},
-        {"name": "LEGAL", "total": 0},
-        {"name": "PREVISIÓN", "total": 0},
-        {"name": "PROYECTOS SOCIALES", "total": 0},
-        {"name": "SALUD", "total": 0},
-        {"name": "VIVIENDA", "total": 0},
+    terreno = [
+        {"name": "ATENCION GRUPAL", "total": 0, "area_id": 11},
+        {"name": "ATENCIÓN INDIVIDUAL", "total": 0, "area_id": 10},
+        {"name": "BENEFICIOS DE EMPRESA", "total": 0, "area_id": 8},
+        {"name": "DEUDA / AHORRO", "total": 0, "area_id": 7},
+        {"name": "EDUCACIÓN", "total": 0, "area_id": 6},
+        {"name": "FAMILIA", "total": 0, "area_id": 5},
+        {"name": "FINIQUITADO", "total": 0, "area_id": 13},
+        {"name": "FUNDACION RECONOCER", "total": 0, "area_id": 9},
+        {"name": "INCORPORACION", "total": 0, "area_id": 14},
+        {"name": "LEGAL", "total": 0, "area_id": 4},
+        {"name": "PREVISIÓN", "total": 0, "area_id": 1},
+        {"name": "PROYECTOS SOCIALES", "total": 0, "area_id": 12},
+        {"name": "SALUD", "total": 0, "area_id": 2},
+        {"name": "VIVIENDA", "total": 0, "area_id": 3},
     ]
+    topic_id_terreno = []
+    oficina = [
+        {"name": "ATENCION GRUPAL", "total": 0, "area_id": 11},
+        {"name": "ATENCIÓN INDIVIDUAL", "total": 0, "area_id": 10},
+        {"name": "BENEFICIOS DE EMPRESA", "total": 0, "area_id": 8},
+        {"name": "DEUDA / AHORRO", "total": 0, "area_id": 7},
+        {"name": "EDUCACIÓN", "total": 0, "area_id": 6},
+        {"name": "FAMILIA", "total": 0, "area_id": 5},
+        {"name": "FINIQUITADO", "total": 0, "area_id": 13},
+        {"name": "FUNDACION RECONOCER", "total": 0, "area_id": 9},
+        {"name": "INCORPORACION", "total": 0, "area_id": 14},
+        {"name": "LEGAL", "total": 0, "area_id": 4},
+        {"name": "PREVISIÓN", "total": 0, "area_id": 1},
+        {"name": "PROYECTOS SOCIALES", "total": 0, "area_id": 12},
+        {"name": "SALUD", "total": 0, "area_id": 2},
+        {"name": "VIVIENDA", "total": 0, "area_id": 3},
+    ]
+    topic_id_oficina = []
 
-    topicIds = []
     assistances = db.query(Assistance).filter(Assistance.visit_id.in_((body.visit_id))).all()
     for obj in assistances:
-        topicIds.append(obj.topic_id)
-        for area in result:
-            if(area["name"] == obj.area_name):
-                area["total"] = area["total"] + 1
+        if obj.attention_place == 'TERRENO':
+            topic_id_terreno.append(obj.topic_id)
+            for area_terreno in terreno:
+                if area_terreno["name"] == obj.area_name:
+                    area_terreno["total"] = area_terreno["total"] + 1
+        else:
+            topic_id_oficina.append(obj.topic_id)
+            for area_oficina in oficina:
+                if area_oficina["name"] == obj.area_name:
+                    area_oficina["total"] = area_oficina["total"] +1
 
-    return {"result": result, "topicIds": topicIds}
+    return {"terreno": terreno, "topic_ids_terreno": topic_id_terreno, "oficina": oficina, "topic_ids_oficina": topic_id_oficina}
