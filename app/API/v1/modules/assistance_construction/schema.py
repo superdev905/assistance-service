@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel
+from typing import List
 
 
 class AssistanceConstructionCreate(BaseModel):
@@ -26,3 +27,6 @@ class AssistanceConstructionCreate(BaseModel):
 
 class AssistanceConstructionSchema (AssistanceConstructionCreate):
     id: int
+
+class AssistanceConstructionAficheCharlaFolleto(BaseModel):
+    id: List[int]

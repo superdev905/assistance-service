@@ -355,9 +355,19 @@ def get_assistance(body: AssistanceReport, db: Session = Depends(get_database)):
     ]
     topic_id_oficina = []
     management_id_oficina = []
+    assistances_company = []
+    personas_visitas = []
 
     assistances = db.query(Assistance).filter(Assistance.visit_id.in_((body.visit_id))).all()
+    assistances_company_report = db.query(Assistance).filter(and_(Assistance.visit_id.in_((body.visit_id)), Assistance.is_social_case == 'SI', Assistance.company_report == 'SI'))
+
+    total_consultas = len(assistances)
+
+    for company_report in assistances_company_report:
+        assistances_company.append(company_report)
+
     for obj in assistances:
+        personas_visitas.append({"visit_id": obj.visit_id, "persona": obj.employee_id})
         if obj.attention_place == 'TERRENO':
             topic_id_terreno.append(obj.topic_id)
             management_id_terreno.append(obj.management_id)
@@ -378,4 +388,7 @@ def get_assistance(body: AssistanceReport, db: Session = Depends(get_database)):
         "oficina": oficina, 
         "topic_ids_oficina": topic_id_oficina, 
         "management_id_oficina": management_id_oficina,
+        "companyReport": assistances_company,
+        "total_consultas": total_consultas,
+        "personas_visitas": personas_visitas
         }
