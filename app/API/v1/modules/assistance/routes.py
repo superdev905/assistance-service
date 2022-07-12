@@ -359,7 +359,7 @@ def get_assistance(body: AssistanceReport, db: Session = Depends(get_database)):
     personas_visitas = []
 
     assistances = db.query(Assistance).filter(Assistance.visit_id.in_((body.visit_id))).all()
-    assistances_company_report = db.query(Assistance).filter(and_(Assistance.visit_id.in_((body.visit_id)), Assistance.is_social_case == 'SI', Assistance.company_report == 'SI'))
+    assistances_company_report = db.query(Assistance).filter(and_(Assistance.visit_id.in_((body.visit_id)), Assistance.company_report == 'SI'))
 
     total_consultas = len(assistances)
 
