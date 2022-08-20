@@ -14,7 +14,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from app.database.main import get_database
 from app.settings import SERVICES
 from ...middlewares.auth import JWTBearer
-from ...helpers.fetch_data import fetch_users_service, get_business_data, fetch_parameter_data, get_employee_data, get_employee_current_job
+from ...helpers.fetch_data import fetch_users_service, get_business_data, fetch_parameter_data, get_employee_data
 from ..assistance.model import Assistance
 from ..assistance_construction.model import AssistanceConstruction
 from ..report_item.model import VisitReportItem
@@ -316,29 +316,17 @@ def get_one_statistics(req: Request,
     old = 0
     new = 0
     docs = db.query(Assistance.employee_id.label('employee_id')).filter(Assistance.visit_id == id).group_by(Assistance.employee_id).all()
-    ids = []
 
     for i in docs:
-        ids.append(i.employee_id)
-    
-    employee = get_employee_current_job(req, ids)
-
-    for job in employee["current_job"]:
-        if job["contract_type"] == "SUB CONTRATO":
-            total_sub_contract += 1
-        if job["contract_type"] == "EMPRESA":
-            total_house += 1
-
-    #for i in docs:
-    #    employee = get_employee_current_job(req, i.employee_id)
-    #    if employee["current_job"]:
-    #        old += 1
-    #        if employee["current_job"]["contract_type"] == "SUB CONTRATO":
-    #            total_sub_contract += 1
-    #        if employee["current_job"]["contract_type"] == "EMPRESA":
-    #            total_house += 1
-    #    else:
-    #        new += 1
+        employee = get_employee_data(req, i.employee_id)
+        if employee["current_job"]:
+            old += 1
+            if employee["current_job"]["contract_type"] == "SUB CONTRATO":
+                total_sub_contract += 1
+            if employee["current_job"]["contract_type"] == "EMPRESA":
+                total_house += 1
+        else:
+            new += 1
 
     db.close()
     return {"total": total, "new": new, "old": old, "house": total_house, "subcontract": total_sub_contract}
