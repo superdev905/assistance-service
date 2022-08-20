@@ -2,6 +2,7 @@ import urllib3
 import json
 from fastapi import Request
 from fastapi.exceptions import HTTPException
+from fastapi.encoders import jsonable_encoder
 from app.settings import SERVICES
 
 http = urllib3.PoolManager()
@@ -53,6 +54,18 @@ def fetch_service(token: str, route: str) -> str:
 
     return result
 
+def fetch_current_job_service(token: str, route: str, ids: list) -> str:
+    encoded_data = json.dumps({"employee_id":ids})
+    user_req = http.request(
+        'POST', route, headers={
+            "Authorization": "Bearer %s" % token,
+            'Content-Type': 'application/json'
+        }, body=encoded_data)
+    
+    result = handle_response(user_req)
+
+    return result
+
 
 def handle_request(token: str, route: str, body, method: str = "GET",) -> str:
     user_req = http.request(
@@ -66,6 +79,9 @@ def handle_request(token: str, route: str, body, method: str = "GET",) -> str:
 
 def get_employee_data(request: Request, id: int):
     return fetch_service(request.token, SERVICES["employees"] + "/employees/"+str(id))
+
+def get_employee_current_job(request: Request, id: list):
+    return fetch_current_job_service(request.token, SERVICES["employees"] + "/employees/current-job", id)
 
 
 def get_business_data(token: str, prefix: str, id: int):
