@@ -403,6 +403,8 @@ def create_report(req: Request, id: int, report_in: VisitReportSchema, db: Sessi
     if not visit:
         raise HTTPException(
             status_code=400, detail="Esta visita no existe")
+    
+    print('||--- Iniciando Petición de Reporte ---||')
 
     generate_visit_report(db, id, report_in, req)
 

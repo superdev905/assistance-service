@@ -32,6 +32,8 @@ def upload_report(filename, file):
 
 def create_visit_report(token: str, data):
 
+    print('||--- Generando el reporte en PDF ---||', data)
+
     buffer = BytesIO()
     date_string = data["date"]
     report_name = 'Reporte'+data["correlative"] + ".pdf"

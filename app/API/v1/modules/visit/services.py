@@ -168,6 +168,8 @@ def create_report_items(db: Session, items: List, report_id: int, user_id: int):
 
 
 def generate_report_and_upload(db: Session, visit_id: int, body: VisitReportSchema, token: str):
+
+    print("||--- Generando reporte ---||", body)
     visit = db.query(Visit).filter(Visit.id == visit_id).first()
     total_formatted = ""
     total_assistance = len(db.query(Assistance.employee_id.label('employee_id')).filter(
@@ -208,6 +210,7 @@ def generate_report_and_upload(db: Session, visit_id: int, body: VisitReportSche
 def generate_visit_report(db: Session, visit_id: int, body: VisitReportSchema, req: Request) -> None:
 
     report = generate_report_and_upload(db, visit_id, body, req.token)
+    print('||---Obteniendo data del reporte---||', body)
 
     obj_report = jsonable_encoder(body)
     del obj_report["contacts"]
