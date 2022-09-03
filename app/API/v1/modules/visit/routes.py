@@ -18,7 +18,7 @@ from ...helpers.fetch_data import fetch_users_service, get_business_data, fetch_
 from ..assistance.model import Assistance
 from ..assistance_construction.model import AssistanceConstruction
 from ..report_item.model import VisitReportItem
-from .model import Visit, VisitReport, VisitRevision
+from .model import Visit, VisitReport, VisitRevision, StatisticsView
 from .schema import VisitCalendarItem, VisitCloseSchema, VisitCreate, VisitPatchSchema, VisitReportSchema, VisitWorkers, VisitsExport
 from .services import close_visit, format_business_details, format_construction_details, generate_to_attend_employees_excel, generate_visit_report, get_blocked_status, generate_visits_excel, get_owner_status
 from email.mime.multipart import MIMEMultipart
@@ -310,6 +310,7 @@ def get_one_statistics(req: Request,
 
     """
 
+    """
     total = len(db.query(Assistance.employee_id.label('employee_id')).filter(Assistance.visit_id == id).group_by(Assistance.employee_id).all())
     total_house = 0
     total_sub_contract = 0
@@ -329,19 +330,10 @@ def get_one_statistics(req: Request,
         if job["contract_type"] == "EMPRESA":
             total_house += 1
 
-    #for i in docs:
-    #    employee = get_employee_current_job(req, i.employee_id)
-    #    if employee["current_job"]:
-    #        old += 1
-    #        if employee["current_job"]["contract_type"] == "SUB CONTRATO":
-    #            total_sub_contract += 1
-    #        if employee["current_job"]["contract_type"] == "EMPRESA":
-    #            total_house += 1
-    #    else:
-    #        new += 1
+    """
 
-    db.close()
-    return {"total": total, "new": new, "old": old, "house": total_house, "subcontract": total_sub_contract}
+    #db.close()
+    #return db.query(StatisticsView).filter(StatisticsView.visit_id == id).all()
 
 
 @router.post("/{id}/workers")

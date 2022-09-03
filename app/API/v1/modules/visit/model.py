@@ -114,3 +114,13 @@ class VisitRevision(Base):
                         nullable=False, server_default=func.now())
     update_at = Column(DateTime(timezone=True),
                        server_default=func.now(), onupdate=func.now())
+
+
+class StatisticsView(Base):
+    __tablename__ = "statistics_visits"
+    visit_id = Column(Integer, primary_key=True)
+    employee_id = Column(Integer)
+    count = Column(Integer)
+    construction_id = Column(Integer)
+    contract_type = Column(String(255))
+    antiguedad = Column(String(50))
