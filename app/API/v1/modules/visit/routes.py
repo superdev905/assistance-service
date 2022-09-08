@@ -25,7 +25,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 import smtplib
-import asyncio
 
 router = APIRouter(
     prefix="/visits", tags=["Visitas"], dependencies=[Depends(JWTBearer())])
@@ -69,7 +68,7 @@ def get_calendar_stats(req: Request,
 
 
 @router.get("/calendar", response_model=List[VisitCalendarItem])
-async def get_calendar_events(req: Request,
+def get_calendar_events(req: Request,
                         users: List[int] = Query(None),
 
                         start_date: Optional[datetime] = None,
@@ -84,7 +83,7 @@ async def get_calendar_events(req: Request,
     - **user_id**: Id de usuario responsable
     """
     user_id = req.user_id
-    current_user = await fetch_users_service(req.token, req.user_id)
+    current_user = fetch_users_service(req.token, req.user_id)
     user_role = current_user["role"]["key"]
 
     filters = []
@@ -103,14 +102,14 @@ async def get_calendar_events(req: Request,
     users_filters.append(Visit.assigned_id.in_(users_ids))
 
     items = []
-    events = await db.query(Visit).filter(
+    events = db.query(Visit).filter(
         and_(or_(*filters), *users_filters)).order_by(Visit.date).all()
 
     for visit in events:
         items.append(
             {**visit.__dict__,
              "is_owner": get_owner_status(user_role, visit.assigned_id, req.user_id),
-             "assigned": await fetch_users_service(req.token, visit.assigned_id)
+             "assigned": fetch_users_service(req.token, visit.assigned_id)
              })
 
     db.close()
